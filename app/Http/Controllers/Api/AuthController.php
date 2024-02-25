@@ -16,13 +16,13 @@ class AuthController extends Controller
         //validación de los datos
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users',
+            'email_user' => 'required|email|unique:users',
             'password' => 'required|confirmed'
         ]);    
         //alta del usuario
         $user = new User();
         $user->name = $request->name;
-        $user->email = $request->email;
+        $user->email_user = $request->email_user;
         $user->password = Hash::make($request->password);
         $user->save();
         //respuesta
@@ -34,19 +34,28 @@ class AuthController extends Controller
 
     public function login(Request $request) {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email_user' => ['required', 'email'],
             'password' => ['required']
         ]);
-
+    
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $token = $user->createToken('token')->plainTextToken;
-            $cookie = cookie('cookie_token', $token, 60 * 24);
-            return response(["token"=>$token], Response::HTTP_OK)->withoutCookie($cookie);
+    
+            // Additional data
+            $response = [
+                "email_user" => $user->email_user,
+                "distid" => "RRA555", // Replace with actual data
+                "usuario" => 25, // Replace with actual data
+                "token" => $token
+            ];
+    
+            return response($response, Response::HTTP_OK);
         } else {
-            return response(["message"=> "Credenciales inválidas"],Response::HTTP_UNAUTHORIZED);
-        }        
+            return response(["message" => "Credenciales inválidas"], Response::HTTP_UNAUTHORIZED);
+        }
     }
+    
 
     public function userProfile(Request $request) {
         return response()->json([
