@@ -10,7 +10,10 @@ class PersonalAdmin extends Model
     protected $table = 'PersonalAdmin';  // Especifica el nombre de tu tabla
 
     protected $fillable = [
-        // Otros campos específicos de PersonalAdmin, si los hay
+        'nombre',
+        'apellido',
+        'cedula',
+        'fechaNacimiento',
         'idAuth',
     ];
 

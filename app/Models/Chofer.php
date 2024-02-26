@@ -7,8 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Chofer extends Model
 {
+    public $timestamps = false; // Desactiva timestamps
+
     protected $fillable = [
-        // campos específicos de chofer, si los hay
+        'nombre',
+        'apellido',
+        'cedula',
+        'fechaNacimiento',
+        'idAuth',
     ];
 
     public function auths()

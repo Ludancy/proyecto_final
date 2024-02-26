@@ -7,8 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cliente extends Model
 {
+    protected $table = 'cliente';  // Especifica el nombre de tu tabla
+
     protected $fillable = [
-        // campos específicos de cliente, si los hay
+        'nombre',
+        'apellido',
+        'cedula',
+        'fechaNacimiento',
+        'idAuth',
     ];
 
     public function auths()

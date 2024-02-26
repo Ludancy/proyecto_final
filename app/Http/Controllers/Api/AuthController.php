@@ -37,21 +37,57 @@ class AuthController extends Controller
     
             // Según el rol, insertar en la tabla específica (chofer, cliente, personalAdmin)
             switch ($request->idRol) {
-                case 1: // Cliente
-                    Cliente::create([
-                        'idAuth' => $auth->id,
-                        // Agrega aquí los campos específicos para el cliente
+                case 1: // Personal Admin
+                    $request->validate([
+                        'nombre' => 'required',
+                        'apellido' => 'required',
+                        'cedula' => 'required',
+                        'fechaNacimiento' => 'required',
+                        // Agrega aquí las validaciones necesarias para los campos específicos de personalAdmin
                     ]);
-                    break;
-                case 2: // Personal Admin
+            
                     PersonalAdmin::create([
                         'idAuth' => $auth->id,
+                        'nombre' => $request->nombre,
+                        'apellido' => $request->apellido,
+                        'cedula' => $request->cedula,
+                        'fechaNacimiento' => $request->fechaNacimiento,
                         // Agrega aquí los campos específicos para el personal admin
                     ]);
                     break;
+                case 2: // Cliente
+                    $request->validate([
+                        'nombre' => 'required',
+                        'apellido' => 'required',
+                        'cedula' => 'required',
+                        'fechaNacimiento' => 'required',
+                        // Agrega aquí las validaciones necesarias para los campos específicos de cliente
+                    ]);
+            
+                    Cliente::create([
+                        'idAuth' => $auth->id,
+                        'nombre' => $request->nombre,
+                        'apellido' => $request->apellido,
+                        'cedula' => $request->cedula,
+                        'fechaNacimiento' => $request->fechaNacimiento,
+                        // Agrega aquí los campos específicos para el cliente
+                    ]);
+                    break;
                 case 3: // Chofer
+                    $request->validate([
+                        'nombre' => 'required',
+                        'apellido' => 'required',
+                        'cedula' => 'required',
+                        'fechaNacimiento' => 'required',
+                        // Agrega aquí las validaciones necesarias para los campos específicos de chofer
+                    ]);
+            
                     Chofer::create([
                         'idAuth' => $auth->id,
+                        'nombre' => $request->nombre,
+                        'apellido' => $request->apellido,
+                        'cedula' => $request->cedula,
+                        'fechaNacimiento' => $request->fechaNacimiento,
                         // Agrega aquí los campos específicos para el chofer
                     ]);
                     break;
@@ -78,12 +114,53 @@ class AuthController extends Controller
                 $user = Auth::user();
                 $token = $user->createToken('token')->plainTextToken;
     
-                // Additional data
+                // Obtener datos adicionales según el tipo de usuario
+                $additionalData = [];
+                switch ($user->idRol) {
+                    case 1: // Personal Admin
+                        $personalAdmin = PersonalAdmin::where('idAuth', $user->id)->first();
+                        $additionalData = [
+                            'nombre' => $personalAdmin->nombre,
+                            'apellido' => $personalAdmin->apellido,
+                            'cedula' => $personalAdmin->cedula,
+                            'fechaNacimiento' => $personalAdmin->fechaNacimiento,
+                            // Agrega aquí otros campos específicos para el personal admin
+                        ];
+                        break;
+                    case 2: // Cliente
+                        $cliente = Cliente::where('idAuth', $user->id)->first();
+                        $additionalData = [
+                            'nombre' => $cliente->nombre,
+                            'apellido' => $cliente->apellido,
+                            'cedula' => $cliente->cedula,
+                            'fechaNacimiento' => $cliente->fechaNacimiento,
+                            // Agrega aquí otros campos específicos para el cliente
+                        ];
+                        break;
+
+                    case 3: // Chofer
+                        $chofer = Chofer::where('idAuth', $user->id)->first();
+                        $additionalData = [
+                            'nombre' => $chofer->nombre,
+                            'apellido' => $chofer->apellido,
+                            'cedula' => $chofer->cedula,
+                            'fechaNacimiento' => $chofer->fechaNacimiento,
+                            // Agrega aquí otros campos específicos para el chofer
+                        ];
+                        break;
+                    // Agrega más casos según sea necesario para otros roles
+    
+                
+    
+                }
+    
+                // Response data
                 $response = [
-                    "email_user" => $user->correo, // Ahora se utiliza 'correo' en lugar de 'email_user'
+                    "email_user" => $user->correo,
                     "distid" => "RRA555", // Reemplaza con datos reales
-                    "role" => $user->idRol, // Reemplaza con datos reales
-                    "token" => $token
+                    "role" => $user->idRol,
+                    "token" => $token,
+                    "additional_data" => $additionalData,
                 ];
     
                 return response($response, Response::HTTP_OK);

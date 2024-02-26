@@ -16,12 +16,11 @@ return new class extends Migration
     // chofer table
     Schema::create('chofers', function (Blueprint $table) {
         $table->id();
-        $table->string('nombre');
-        $table->string('apellido');
-        $table->string('cedula');
-        $table->date('fechaNacimiento');
+        $table->string('nombre')->nullable();
+        $table->string('apellido')->nullable();
+        $table->string('cedula')->nullable();
+        $table->date('fechaNacimiento')->nullable();
         $table->foreignId('idAuth')->constrained('auths');
-        $table->timestamps();
     });
 
     }
