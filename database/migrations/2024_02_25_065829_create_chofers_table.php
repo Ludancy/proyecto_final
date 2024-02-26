@@ -14,10 +14,13 @@ return new class extends Migration
     public function up()
     {
     // chofer table
-    Schema::create('chofer', function (Blueprint $table) {
+    Schema::create('chofers', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('auth_id')->constrained('auth'); // Foreign key to auth table
-        // add additional chofer-specific fields if needed
+        $table->string('nombre');
+        $table->string('apellido');
+        $table->string('cedula');
+        $table->date('fechaNacimiento');
+        $table->foreignId('idAuth')->constrained('auths');
         $table->timestamps();
     });
 

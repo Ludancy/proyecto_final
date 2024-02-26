@@ -16,8 +16,11 @@ return new class extends Migration
 // cliente table
         Schema::create('cliente', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auth_id')->constrained('auth'); // Foreign key to auth table
-            // add additional cliente-specific fields if needed
+            $table->string('nombre');
+            $table->string('apellido');
+            $table->string('cedula');
+            $table->date('fechaNacimiento');
+            $table->foreignId('idAuth')->constrained('auths');
             $table->timestamps();
         });
 

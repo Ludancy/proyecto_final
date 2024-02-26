@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class PersonalAdmin extends Model
 {
+    protected $table = 'PersonalAdmin';  // Especifica el nombre de tu tabla
+
     protected $fillable = [
-        // campos específicos de personalAdmin, si los hay
+        // Otros campos específicos de PersonalAdmin, si los hay
+        'idAuth',
     ];
 
-    public function auths()
-    {
-        return $this->belongsTo('App\Models\Auths', 'auth_id');
-    }
+    // Resto del código...
 }
 

@@ -13,14 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-    // admin table
+        // admin table
         Schema::create('personalAdmin', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auth_id')->constrained('auth'); // Foreign key to auth table
-            // add additional admin-specific fields if needed
+            $table->string('nombre')->nullable();
+            $table->string('apellido')->nullable();
+            $table->string('cedula')->nullable();
+            $table->date('fechaNacimiento')->nullable();
+            $table->foreignId('idAuth')->constrained('auths')->nullable();
             $table->timestamps();
+            // add additional admin-specific fields if needed
         });
-
     }
 
     /**
@@ -30,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('admins');
+        Schema::dropIfExists('personalAdmin');
     }
 };
