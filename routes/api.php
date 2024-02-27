@@ -22,9 +22,14 @@ Route::post('register', [AuthController::class, 'register']);
 
 // Choferes
 Route::post('prueba-chofer', [ChoferController::class, 'storeCalificacion']);
+
 Route::get('choferes/{id}', [ChoferController::class, 'getInfo']);
+Route::get('/choferes', [ChoferController::class, 'getChoferes']);
 Route::post('/pruebas/evaluacion-psicologica', [ChoferController::class, 'evaluacionPsicologica']);
+Route::get('/choferes/{id}/evaluacion-psicologica', [ChoferController::class, 'getEvaluacionPsicologica']);
 Route::get('choferes/{id}/vehiculos', [ChoferController::class, 'getVehiculos']);
+Route::get('/choferes/{idChofer}/{idVehiculo}/evaluacion-vehiculo', [ChoferController::class, 'obtenerResultadoEvaluacionVehiculo']);
+// FALTA ESTE ENDPOINT
 Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados']);
 
 //Vehiculos
@@ -34,10 +39,10 @@ Route::put('vehiculos/{id}/update', [VehiculoController::class, 'updateInfo']);
 Route::delete('vehiculos/{id}/delete', [VehiculoController::class, 'delete']);
 Route::post('pruebas/evaluacion-vehiculo', [VehiculoController::class, 'evaluacionVehiculo']);
 
+
 //WIP--------------------
 // Clientes
-Route::post('clientes/register', [ClienteController::class, 'register']);
-Route::post('clientes/login', [ClienteController::class, 'login']);
+Route::post('clientes/recargar-saldo', [ClienteController::class, 'recargarSaldo']);
 Route::get('clientes/{id}', [ClienteController::class, 'getInfo']);
 Route::post('clientes/recargar-saldo', [ClienteController::class, 'recargarSaldo']);
 Route::post('clientes/solicitar-traslado', [ClienteController::class, 'solicitarTraslado']);

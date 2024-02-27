@@ -22,7 +22,10 @@ class Chofer extends Model
         'fechaNacimiento',
         'idAuth',
     ];
-
+    public function vehiculos()
+    {
+        return $this->hasMany(Vehiculo::class, 'idChofer');
+    }
     public function auths()
     {
         return $this->belongsTo('App\Models\Auths', 'idAuth');

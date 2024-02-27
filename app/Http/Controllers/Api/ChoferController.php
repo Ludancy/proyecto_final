@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Chofer;
 use App\Models\PruebaChofer;
+use App\Models\PruebaVehiculo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
@@ -33,28 +34,36 @@ class ChoferController extends Controller
         'calificacion' => $request->calificacion,
         // Agrega otros campos según tus necesidades
     ]);
-
-    
+ 
     return response()->json($pruebaChofer, 201);
-}
+    }   
 
-    public function index()
+    public function getEvaluacionPsicologica($id)
     {
-        $choferes = Chofer::all();
-        return response()->json($choferes, 200);
-    }
+        // Validar que el chofer exista
+        $validator = Validator::make(['idChofer' => $id], [
+            'idChofer' => 'exists:chofers,id',
+        ]);
 
-    public function show($id)
-    {
-        $chofer = Chofer::find($id);
-
-        if (!$chofer) {
-            return response()->json(['message' => 'Chofer no encontrado'], 404);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 404);
         }
 
-        return response()->json($chofer, 200);
-    }
+        // Obtener la evaluación psicológica del chofer
+        $evaluacion = PruebaChofer::where('idChofer', $id)->orderBy('created_at', 'desc')->first();
 
+        if (!$evaluacion) {
+            return response()->json(['message' => 'No se encontró ninguna evaluación psicológica para el chofer.'], 404);
+        }
+
+        return response()->json($evaluacion);
+    }
+public function getChoferes()
+{
+    $choferes = Chofer::all(); // Obtén todos los choferes desde tu modelo
+
+    return response()->json(['choferes' => $choferes], 200);
+}
     public function getInfo($id)
     {
         try {
@@ -99,4 +108,59 @@ class ChoferController extends Controller
             return Response::json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getVehiculos($id)
+{
+    try {
+        // Busca al chofer con el ID proporcionado y carga la relación 'vehiculos'
+        $chofer = Chofer::with('vehiculos')->find($id);
+
+        if (!$chofer) {
+            return Response::json(['error' => 'Chofer no encontrado'], 404);
+        }
+
+        // Obtén los vehículos registrados por el chofer
+        $vehiculos = $chofer->vehiculos;
+
+        // Puedes personalizar el formato de respuesta según tus necesidades
+        $response = [
+            'chofer' => $chofer        ];
+
+        return Response::json($response, 200);
+    } catch (\Exception $e) {
+        return Response::json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
+public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
+{
+    // Validar que el chofer exista
+    $chofer = Chofer::with(['vehiculos' => function ($query) use ($idVehiculo) {
+        $query->where('id', $idVehiculo);
+    }])->find($idChofer);
+
+    if (!$chofer) {
+        return response()->json(['message' => 'No se encontró el chofer.'], 404);
+    }
+
+    // Obtener el vehículo asociado al chofer
+    $vehiculo = $chofer->vehiculos->first();
+
+    if (!$vehiculo || $vehiculo->id != $idVehiculo) {
+        return response()->json(['message' => 'No se encontró un vehículo asociado al chofer.'], 404);
+    }
+
+    // Obtener la última evaluación de vehículo asociada al vehículo del chofer
+    $evaluacionVehiculo = PruebaVehiculo::where('idVehiculo', $idVehiculo)
+        ->first();
+
+    if (!$evaluacionVehiculo) {
+        return response()->json(['message' => 'No se encontró ninguna evaluación de vehículo para el chofer.'], 404);
+    }
+
+    return response()->json($evaluacionVehiculo);
+}
+
+// ... Otras funciones ...
 }
