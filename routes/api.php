@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\TrasladoController;
 use App\Http\Controllers\Api\PruebaController;
 use App\Http\Controllers\Api\VehiculoController;
+use App\Http\Controllers\Api\ClienteController;
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,7 +50,12 @@ Route::delete('vehiculos/{id}/delete', [VehiculoController::class, 'delete']);
 
 
 // Clientes
-
+Route::prefix('clientes')->group(function () {
+    Route::get('/', [ClienteController::class, 'index']); // Obtener todos los clientes
+    Route::get('/{id}', [ClienteController::class, 'show']); // Obtener un cliente por ID
+    Route::put('/{id}', [ClienteController::class, 'update']); // Actualizar un cliente por ID
+    Route::delete('/{id}', [ClienteController::class, 'destroy']); // Eliminar un cliente por ID
+});
 
 // Administrativo
 
