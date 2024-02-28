@@ -12,8 +12,8 @@ class CreateTrasladosTable extends Migration
     {
         Schema::create('traslados', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('idChofer')->constrained('chofers');
-            $table->foreignId('idCliente')->constrained('cliente');
+            $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade');
+            $table->foreignId('idCliente')->constrained('cliente')->onDelete('cascade');
             $table->string('origen');
             $table->string('destino');
             $table->decimal('costo', 10, 2);

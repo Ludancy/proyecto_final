@@ -10,7 +10,7 @@ class CreatePruebaChofersTable extends Migration
     {
         Schema::create('pruebaChofer', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('idChofer')->constrained('chofers'); // Reemplaza 'chofers' con el nombre real de la tabla de Chofer
+            $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade'); // Reemplaza 'chofers' con el nombre real de la tabla de Chofer
             $table->integer('calificacion');
             $table->timestamp('fecha_creacion')->useCurrent();
             // Agrega otros campos según tus necesidades

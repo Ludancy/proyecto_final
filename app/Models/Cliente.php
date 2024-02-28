@@ -17,9 +17,15 @@ class Cliente extends Model
         'idAuth',
     ];
 
-    public function auths()
+    public function user()
     {
-        return $this->belongsTo('App\Models\Auths', 'auth_id');
+        return $this->belongsTo(User::class, 'idAuth');
+    }
+
+    // Nueva relación para manejar los traslados solicitados por un cliente
+    public function traslados()
+    {
+        return $this->hasMany('App\Models\Traslado', 'idCliente');
     }
 }
 

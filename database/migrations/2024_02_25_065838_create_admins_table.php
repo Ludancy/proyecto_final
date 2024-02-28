@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('apellido')->nullable();
             $table->string('cedula')->nullable();
             $table->date('fechaNacimiento')->nullable();
-            $table->foreignId('idAuth')->constrained('auths')->nullable();
+            $table->foreignId('idAuth')->constrained('auths')->nullable()->onDelete('cascade');
             $table->timestamps();
             // add additional admin-specific fields if needed
         });

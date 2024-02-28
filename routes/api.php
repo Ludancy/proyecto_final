@@ -56,6 +56,8 @@ Route::prefix('clientes')->group(function () {
     Route::put('/{id}', [ClienteController::class, 'update']); // Actualizar un cliente por ID
     Route::delete('/{id}', [ClienteController::class, 'destroy']); // Eliminar un cliente por ID
 });
+Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'solicitarTraslado']);
+
 
 // Administrativo
 

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('apellido');
             $table->string('cedula');
             $table->date('fechaNacimiento');
-            $table->foreignId('idAuth')->constrained('auths');
+            $table->foreignId('idAuth')->constrained('auths')->onDelete('cascade');
             $table->timestamps();
         });
 
