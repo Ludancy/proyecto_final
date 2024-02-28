@@ -84,6 +84,39 @@ public function getChoferes()
         }
     }
 
+        // Actualizar un chofer por ID
+        public function update(Request $request, $id)
+        {
+            $chofer = Chofer::find($id);
+    
+            if (!$chofer) {
+                return response()->json(['message' => 'Chofer no encontrado'], 404);
+            }
+    
+            // Validaciones y lógica para actualizar el chofer
+            // ...
+    
+            $chofer->update($request->all());
+    
+            return response()->json(['message' => 'Chofer actualizado con éxito']);
+        }
+    
+    // Eliminar un chofer por ID
+    public function destroy($id)
+    {
+        $chofer = Chofer::find($id);
+
+        if (!$chofer) {
+            return response()->json(['message' => 'Chofer no encontrado'], 404);
+        }
+        $chofer->delete();
+
+        $chofer->user()->delete();
+
+
+        return response()->json(['message' => 'Chofer y registro en auths eliminados con éxito']);
+    }
+
     public function getTraslados($id)
     {
         try {

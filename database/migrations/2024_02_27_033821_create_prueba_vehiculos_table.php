@@ -10,7 +10,7 @@ class CreatePruebaVehiculosTable extends Migration
     {
         Schema::create('PruebaVehiculo', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('idVehiculo')->constrained('vehiculos');
+            $table->foreignId('idVehiculo')->constrained('vehiculos')->onDelete('cascade');
             $table->decimal('calificacion', 5, 2);
             $table->timestamp('fecha_creacion')->useCurrent();
             // Otros campos según tus necesidades

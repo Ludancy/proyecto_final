@@ -10,7 +10,7 @@ class CreateVehiculosTable extends Migration
     {
         Schema::create('vehiculos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('idChofer')->constrained('chofers');
+            $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade');
             $table->string('marca');
             $table->string('color');
             $table->string('placa')->unique();

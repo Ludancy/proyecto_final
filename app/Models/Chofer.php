@@ -3,9 +3,6 @@
 namespace App\Models;
 
 // app/Models/Chofer.php
-
-namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +10,7 @@ class Chofer extends Model
 {
     use HasFactory;
 
-    public $timestamps = false; // Desactiva timestamps
+    public $timestamps = false;
 
     protected $fillable = [
         'nombre',
@@ -22,19 +19,32 @@ class Chofer extends Model
         'fechaNacimiento',
         'idAuth',
     ];
+
     public function vehiculos()
     {
         return $this->hasMany(Vehiculo::class, 'idChofer');
     }
-    public function auths()
+
+    public function user()
     {
-        return $this->belongsTo('App\Models\Auths', 'idAuth');
+        return $this->belongsTo(User::class, 'idAuth');
     }
 
-    // Relación con la tabla de traslados
     public function traslados()
     {
-        return $this->hasMany('App\Models\Traslado', 'idChofer');
+        return $this->hasMany(Traslado::class, 'idChofer');
+    }
+
+    // Agrega el evento para manejar la eliminación en cascada
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($chofer) {
+            // Eliminar también el usuario asociado al chofer
+            $chofer->user->delete();
+        });
     }
 }
+
 

@@ -24,4 +24,19 @@ class User extends Authenticatable
     protected $hidden = [
         'password'
     ];
+
+    public function cliente()
+    {
+        return $this->hasOne('App\Models\Cliente');
+    }
+
+    public function chofer()
+    {
+        return $this->hasOne('App\Models\Chofer');
+    }
+
+    public function personalAdmin()
+    {
+        return $this->hasOne('App\Models\PersonalAdmin');
+    }
 }
