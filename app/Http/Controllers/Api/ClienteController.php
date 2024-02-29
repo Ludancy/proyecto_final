@@ -87,6 +87,48 @@ class ClienteController extends Controller
         
         return response()->json($traslado, 201);
     }
+
+    public function recargaSaldo(Request $request, $idCliente)
+    {
+        // Validar la solicitud
+        $request->validate([
+            'fechaRecarga' => 'required|date',
+            'referencia' => 'required',
+            'idBanco' => 'required|exists:bancos,id',
+            'monto' => 'required|numeric',
+        ]);
+
+        // Buscar al cliente por ID
+        $cliente = Cliente::find($idCliente);
+
+        if (!$cliente) {
+            return response()->json(['message' => 'Cliente no encontrado.'], 404);
+        }
+
+        // Buscar el banco por ID
+        $banco = Banco::find($request->idBanco);
+
+        if (!$banco) {
+            return response()->json(['message' => 'Banco no encontrado.'], 404);
+        }
+
+        // Registrar la recarga de saldo
+        $recarga = new SaldoCliente([
+            'fecha_recarga' => $request->fechaRecarga,
+            'referencia' => $request->referencia,
+            'monto' => $request->monto,
+        ]);
+
+        // Asociar la recarga al cliente y al banco
+        $cliente->saldoRecargas()->save($recarga);
+        $recarga->banco()->associate($banco)->save();
+
+        // Actualizar el saldo del cliente
+        $cliente->saldo += $request->monto;
+        $cliente->save();
+
+        return response()->json(['message' => 'Recarga de saldo realizada con éxito.']);
+    }
     
 
 }

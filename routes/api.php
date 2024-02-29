@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\TrasladoController;
 use App\Http\Controllers\Api\PruebaController;
 use App\Http\Controllers\Api\VehiculoController;
 use App\Http\Controllers\Api\ClienteController;
+use App\Http\Controllers\Api\BancoController;
 
 
 use Illuminate\Http\Request;
@@ -61,12 +62,69 @@ Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'soli
 
 // Administrativo
 
+Route::post('choferes/{id}/traslados/cancelar', [AdminController::class, 'cancelarTraslados']);
 
+
+// Rutas para el CRUD de Bancos
+Route::prefix('bancos')->group(function () {
+    Route::get('/', [BancoController::class, 'index']); // Obtener todos los bancos
+    Route::get('/{id}', [BancoController::class, 'show']); // Obtener un banco por ID
+    Route::post('/register', [BancoController::class, 'store']); // Crear un nuevo banco
+    Route::put('/{id}/update', [BancoController::class, 'update']); // Actualizar un banco por ID
+    Route::delete('/{id}/delete', [BancoController::class, 'destroy']); // Eliminar un banco por ID
+});
 // Traslados
 
 
 // Pruebas
 
 
+
+
 // FALTA ESTE ENDPOINT -----ENDPOINTS EN COLA----------
 Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados']);
+
+// FALTA TRABAJAR NADA EHCHO
+Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'recargaSaldo']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Cancelar traslados a choferes:
+//--- de este falta mejorar
+// Endpoint: /cancelar_traslados
+// Referencia textual: "...cancelarle a los choferes los traslados, para ello se debe indicar la fecha del pago, la referencia y el monto pagado."
+// Ingresar puntuación a choferes:
+
+// Endpoint: /ingresar_puntuacion_chofer
+// Referencia textual: "...ingresan la puntuación a las pruebas tanto de los choferes..."
+// Ingresar puntuación a vehículos:
+
+// Endpoint: /ingresar_puntuacion_vehiculo
+// Referencia textual: "...pruebas tanto de los vehículos..."
+// Ingresar datos a tablas base (por ejemplo, bancos):
+
+// Endpoint: /ingresar_datos_tabla_base
+// Referencia textual: "...datos de cualquier otra tabla base que el sistema requiera, como por ejemplo bancos."
+// Ver recaudación por ganancias en un periodo de tiempo:
+
+// Endpoint: /recaudacion_ganancias
+// Referencia textual: "...ver lo recaudado por la empresa por concepto de ganancias dado un periodo de tiempo..."
+// Ver pagos a un chofer en un periodo de tiempo:
+
+// Endpoint: /pagos_chofer
+// Referencia textual: "...y lo cancelado a un chofer en específico dado un periodo de tiempo."
