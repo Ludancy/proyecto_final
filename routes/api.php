@@ -55,6 +55,12 @@ Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados'])
     Route::get('/choferes/{id}/evaluacion-psicologica', [ChoferController::class, 'getEvaluacionPsicologica']);
     Route::get('choferes/{id}/vehiculos', [ChoferController::class, 'getVehiculos']);
     Route::get('/choferes/{idChofer}/{idVehiculo}/evaluacion-vehiculo', [ChoferController::class, 'obtenerResultadoEvaluacionVehiculo']);
+    Route::post('/traslados-realizados-chofer/{choferId}', [ChoferController::class, 'revisarTrasladosRealizados']);
+     // Listado de Traslados Cancelados
+     Route::get('chofer/cancelados/{choferId}', [ChoferController::class, 'trasladosCanceladosChofer']);
+
+     // Listado de Traslados Pendientes por Cancelar
+     Route::get('chofer/pendientes/{choferId}', [ChoferController::class, 'trasladosPendientesCancelarChofer']);
 
 //CRUD para Vehiculos
 Route::post('vehiculos/register', [VehiculoController::class, 'register']);
@@ -105,64 +111,5 @@ Route::prefix('bancos')->group(function () {
 
 // Pruebas
 
-
-
-
-// FALTA ESTE ENDPOINT -----ENDPOINTS EN COLA----------
-
-// FALTA TRABAJAR NADA EHCHO
 Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'recargaSaldo']);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Cancelar traslados a choferes:
-//--- de este falta mejorar
-// Endpoint: /cancelar_traslados
-// Referencia textual: "...cancelarle a los choferes los traslados, para ello se debe indicar la fecha del pago, la referencia y el monto pagado."
-// Ingresar puntuación a choferes:
-
-// listos revisar
-
-// Endpoint: /ingresar_puntuacion_vehiculo
-// Referencia textual: "...pruebas tanto de los vehículos..."
-// Ingresar datos a tablas base (por ejemplo, bancos):
-
-// Endpoint: /ingresar_datos_tabla_base
-// Ver recaudación por ganancias en un periodo de tiempo:
-
-// Endpoint: /recaudacion_ganancias
-// Referencia textual: "...ver lo recaudado por la empresa por concepto de ganancias dado un periodo de tiempo..."
-// Ver pagos a un chofer en un periodo de tiempo:
-
-// Endpoint: /pagos_chofer
-// Referencia textual: "...y lo cancelado a un chofer en específico dado un periodo de tiempo."
-
-// nuevos
-
-// Obtener Datos Personales del Cliente:
-
-
-
-
-
-// Endpoint: /consulta-saldo
-// Referencia textual: "...consulta de saldo..."
-// Historial de Recargas para el Cliente:
-
-// Endpoint: /historial-recargas
-// Referencia textual: "...historial de recargas..."

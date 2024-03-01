@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Chofer;
 use App\Models\PruebaChofer;
+use App\Models\Traslado;
 use App\Models\PruebaVehiculo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -195,5 +196,61 @@ public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
     return response()->json($evaluacionVehiculo);
 }
 
-// ... Otras funciones ...
+    public function revisarTrasladosRealizados(Request $request, $choferId)
+        {
+            try {
+                // Obtener el chofer por ID
+                $chofer = Chofer::find($choferId);
+
+                // Validar si el chofer existe
+                if (!$chofer) {
+                    return response()->json(['message' => 'Chofer no encontrado.'], 404);
+                }
+
+
+                // Validar datos de la solicitud
+                $request->validate([
+                    'fecha_inicio' => 'required|date',
+                    'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+                ]);
+
+                // Obtener los traslados realizados por el chofer en un período de tiempo
+                $traslados = Traslado::where('idChofer', $chofer->id)
+                    ->whereBetween('created_at', [$request->fecha_inicio, $request->fecha_fin])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+                // Puedes personalizar la respuesta según tus necesidades
+                return response()->json(['traslados_realizados' => $traslados]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+
+        public function trasladosCanceladosChofer($choferId)
+        {
+            try {
+                $trasladosCancelados = Traslado::where('idChofer', $choferId)
+                    ->where('estado', 'cancelado')
+                    ->get();
+    
+                return response()->json(['trasladosCancelados' => $trasladosCancelados]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+    
+        // Listado de Traslados Pendientes por Cancelar
+        public function trasladosPendientesCancelarChofer($choferId)
+        {
+            try {
+                $trasladosPendientes = Traslado::where('idChofer', $choferId)
+                    ->where('estado', 'pendiente') // Ajusta según la lógica de tu aplicación
+                    ->get();
+    
+                return response()->json(['trasladosPendientes' => $trasladosPendientes]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
 }
