@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// app/Models/Chofer.php
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,26 +9,37 @@ class Chofer extends Model
 {
     use HasFactory;
 
-    public $timestamps = false;
-
+    protected $table = 'chofers';
     protected $fillable = [
         'nombre',
         'apellido',
         'cedula',
         'fechaNacimiento',
         'idAuth',
+        'entidadBancaria',
+        'numeroCuenta',
+        // Otros campos según tus necesidades
     ];
 
+// Relación con la entidad bancaria
+public function cuentasBancarias()
+{
+    return $this->hasMany(BancoChofer::class, 'idChofer');
+}
+
+    // Relación con los contactos de emergencia
+    public function contactosEmergencia()
+    {
+        return $this->hasMany(ContactoEmergenciaChofer::class, 'idChofer');
+    }
+
+    // Relación con los vehículos (asumo que tienes un modelo Vehiculo)
     public function vehiculos()
     {
         return $this->hasMany(Vehiculo::class, 'idChofer');
     }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'idAuth');
-    }
-
+    // Relación con los traslados
     public function traslados()
     {
         return $this->hasMany(Traslado::class, 'idChofer');
@@ -46,5 +56,3 @@ class Chofer extends Model
         });
     }
 }
-
-

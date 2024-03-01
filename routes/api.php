@@ -43,6 +43,8 @@ Route::get('users', [AuthController::class, 'allUsers']);
 // Choferes
 
 // CRUD para Choferes
+Route::post('/agregar-banco-chofer/{idChofer}', [ChoferController::class, 'agregarBancoChofer']);
+Route::post('/agregar-contactos-chofer/{idChofer}', [ChoferController::class, 'agregarContactosChofer']);
 Route::get('choferes/{id}', [ChoferController::class, 'getInfo']);
 Route::get('/choferes', [ChoferController::class, 'getChoferes']);
 Route::put('/choferes/{id}', [ChoferController::class, 'update']); // Actualizar un chofer por ID

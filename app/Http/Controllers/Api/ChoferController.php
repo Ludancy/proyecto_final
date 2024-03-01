@@ -6,6 +6,8 @@ use App\Models\Chofer;
 use App\Models\PruebaChofer;
 use App\Models\Traslado;
 use App\Models\PruebaVehiculo;
+use App\Models\ContactoEmergenciaChofer;
+use App\Models\BancoChofer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
@@ -65,25 +67,28 @@ public function getChoferes()
 
     return response()->json(['choferes' => $choferes], 200);
 }
-    public function getInfo($id)
-    {
-        try {
-            // Encuentra al chofer por su ID
-            $chofer = Chofer::find($id);
+public function getInfo($id)
+{
+    try {
+        // Encuentra al chofer por su ID con las relaciones "banco" y "contactosEmergencia" cargadas
+        $chofer = Chofer::with(['cuentasBancarias', 'contactosEmergencia'])->find($id);
 
-            // Si el chofer no existe, devuelve un mensaje de error
-            if (!$chofer) {
-                return response(["message" => "Chofer no encontrado"], Response::HTTP_NOT_FOUND);
-            }
-
-            // Retorna los datos del chofer
-            return response()->json($chofer, 200);
-
-        } catch (\Exception $e) {
-            // Manejo de excepciones
-            return response(["error" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        // Si el chofer no existe, devuelve un mensaje de error
+        if (!$chofer) {
+            return response(["message" => "Chofer no encontrado"], Response::HTTP_NOT_FOUND);
         }
+
+        // Retorna los datos del chofer con los datos del banco y los contactos de emergencia
+        return response()->json($chofer, 200);
+
+    } catch (\Exception $e) {
+        // Manejo de excepciones
+        return response(["error" => $e->getMessage()]);
     }
+}
+
+
+
 
         // Actualizar un chofer por ID
         public function update(Request $request, $id)
@@ -253,4 +258,60 @@ public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
                 return response()->json(['error' => $e->getMessage()], 500);
             }
         }
+
+        public function agregarContactosChofer(Request $request, $idChofer)
+        {
+            try {
+                // Validar que el chofer exista
+                $chofer = Chofer::findOrFail($idChofer);
+        
+                // Validar datos de la solicitud
+                $request->validate([
+                    'contactosEmergencia' => 'required|array|min:2', // al menos dos contactos
+                    'contactosEmergencia.*.nombre' => 'required|string|max:255',
+                    'contactosEmergencia.*.telefono' => 'required|string|max:20',
+                ]);
+        
+                // Agregar cada contacto de emergencia al chofer
+                foreach ($request->contactosEmergencia as $contacto) {
+                    ContactoEmergenciaChofer::create([
+                        'idChofer' => $idChofer,
+                        'nombre' => $contacto['nombre'],
+                        'telefono' => $contacto['telefono'],
+                        // Puedes agregar más campos según tus necesidades
+                    ]);
+                }
+        
+                return response()->json(['message' => 'Contactos de emergencia agregados con éxito.']);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+
+        public function agregarBancoChofer(Request $request, $idChofer)
+{
+    try {
+        // Validar que el chofer exista
+        $chofer = Chofer::findOrFail($idChofer);
+
+        // Validar datos de la solicitud
+        $request->validate([
+            'idBanco' => 'required|exists:bancos,id',
+            'nroCuenta' => 'required|string|max:255',
+            'estado' => 'nullable|string|max:255',
+        ]);
+
+        // Agregar la relación entre el chofer y el banco
+        BancoChofer::create([
+            'idChofer' => $idChofer,
+            'idBanco' => $request->idBanco,
+            'nroCuenta' => $request->nroCuenta,
+            'estado' => $request->estado,
+        ]);
+
+        return response()->json(['message' => 'Datos bancarios del chofer agregados con éxito.']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
 }
