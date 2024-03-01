@@ -9,7 +9,8 @@ use App\Models\Cliente;
 use App\Models\Traslado;
 use App\Models\Banco;
 use App\Models\SaldoCliente;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller; // Asegúrate de incluir esta línea
 
 class ClienteController extends Controller
@@ -133,7 +134,58 @@ class ClienteController extends Controller
         }
     }
     
+    public function obtenerTrasladosCliente(Request $request)
+    {
+        try {
+            // Verificar si el usuario autenticado es un cliente
+            $user = Auth::user();
     
-    
+            if (!$user->cliente) {
+                return response()->json(['message' => 'El usuario autenticado no es un cliente.'], 403);
+            }
 
+            // Obtener los traslados realizados por el cliente
+            $traslados = Traslado::where('idCliente', $user->cliente->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+    
+            // Puedes personalizar la respuesta según tus necesidades
+            return response()->json(['traslados' => $traslados]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+    public function trasladosCliente($clienteId)
+    {
+        try {
+       
+            // Obtener los traslados realizados por el cliente
+            $traslados = Traslado::where('idCliente', $clienteId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+    
+            // Puedes personalizar la respuesta según tus necesidades
+            return response()->json(['traslados' => $traslados]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+    public function historialRecargasCliente(Request $request, $clienteId)
+    {
+        try {
+            // Obtener el historial de recargas del cliente
+            $historialRecargas = SaldoCliente::where('idCliente', $clienteId)
+                ->orderBy('fecha_recarga', 'desc')
+                ->get();
+    
+            // Puedes personalizar la respuesta según tus necesidades
+            return response()->json(['historial_recargas' => $historialRecargas]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

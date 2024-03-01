@@ -1,16 +1,6 @@
 <?php
-//api.php
+
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ChoferController;
-use App\Http\Controllers\Api\AdminController;
-use App\Http\Controllers\Api\TrasladoController;
-use App\Http\Controllers\Api\PruebaController;
-use App\Http\Controllers\Api\VehiculoController;
-use App\Http\Controllers\Api\ClienteController;
-use App\Http\Controllers\Api\BancoController;
-
-
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -19,9 +9,36 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('user-profile', [AuthController::class, 'userProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
 });
+
+use App\Http\Controllers\Api\ChoferController;
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\TrasladoController;
+use App\Http\Controllers\Api\PruebaController;
+use App\Http\Controllers\Api\VehiculoController;
+use App\Http\Controllers\Api\ClienteController;
+use App\Http\Controllers\Api\BancoController;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\Response;
+
+use Illuminate\Http\Request;
+
+Route::post('register', [AuthController::class, 'register']);
+
+Route::group(['middleware' => ['auth:sanctum']], function(){
+    Route::get('user-profile', [AuthController::class, 'userProfile']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('/traslados', [ClienteController::class, 'obtenerTrasladosCliente']);
+
+});
+
+
+
 //AUTH
 Route::get('users', [AuthController::class, 'allUsers']);
-Route::post('register', [AuthController::class, 'register']);
 
 // Choferes
 
@@ -60,6 +77,9 @@ Route::prefix('clientes')->group(function () {
     Route::delete('/{id}', [ClienteController::class, 'destroy']); // Eliminar un cliente por ID
 });
 Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'solicitarTraslado']);
+Route::get('cliente/traslados/{clienteId}', [ClienteController::class, 'trasladosCliente']);
+Route::get('/historial-recargas', [ClienteController::class, 'historialRecargasCliente']);
+Route::get('/historial-recargas/{clienteId}', [ClienteController::class, 'historialRecargasCliente']);
 
 
 // Administrativo
@@ -116,7 +136,7 @@ Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'r
 // Referencia textual: "...cancelarle a los choferes los traslados, para ello se debe indicar la fecha del pago, la referencia y el monto pagado."
 // Ingresar puntuación a choferes:
 
-
+// listos revisar
 
 // Endpoint: /ingresar_puntuacion_vehiculo
 // Referencia textual: "...pruebas tanto de los vehículos..."
@@ -131,3 +151,18 @@ Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'r
 
 // Endpoint: /pagos_chofer
 // Referencia textual: "...y lo cancelado a un chofer en específico dado un periodo de tiempo."
+
+// nuevos
+
+// Obtener Datos Personales del Cliente:
+
+
+
+
+
+// Endpoint: /consulta-saldo
+// Referencia textual: "...consulta de saldo..."
+// Historial de Recargas para el Cliente:
+
+// Endpoint: /historial-recargas
+// Referencia textual: "...historial de recargas..."
