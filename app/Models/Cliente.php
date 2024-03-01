@@ -1,5 +1,6 @@
 <?php
 
+// app/Models/Cliente.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ class Cliente extends Model
         'cedula',
         'fechaNacimiento',
         'idAuth',
+        'saldo', // Agrega la propiedad saldo
     ];
 
     public function user()
@@ -26,6 +28,12 @@ class Cliente extends Model
     public function traslados()
     {
         return $this->hasMany('App\Models\Traslado', 'idCliente');
+    }
+
+    // Relación con las recargas de saldo
+    public function saldoRecargas()
+    {
+        return $this->hasMany(SaldoCliente::class, 'idCliente');
     }
 }
 

@@ -30,8 +30,10 @@ Route::get('choferes/{id}', [ChoferController::class, 'getInfo']);
 Route::get('/choferes', [ChoferController::class, 'getChoferes']);
 Route::put('/choferes/{id}', [ChoferController::class, 'update']); // Actualizar un chofer por ID
 Route::delete('/choferes/{id}', [ChoferController::class, 'destroy']); // Eliminar un chofer por ID
+Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados']);
 
     Route::post('prueba-chofer', [ChoferController::class, 'storeCalificacion']);
+    // Referencia textual: "...ingresan la puntuación a las pruebas tanto de los choferes..."
     Route::post('/pruebas/evaluacion-psicologica', [ChoferController::class, 'evaluacionPsicologica']);
     Route::get('/choferes/{id}/evaluacion-psicologica', [ChoferController::class, 'getEvaluacionPsicologica']);
     Route::get('choferes/{id}/vehiculos', [ChoferController::class, 'getVehiculos']);
@@ -61,11 +63,16 @@ Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'soli
 
 
 // Administrativo
+Route::post('/calcular-ganancias', [AdminController::class, 'calcularGanancias']);
 
 Route::post('choferes/{id}/traslados/cancelar', [AdminController::class, 'cancelarTraslados']);
+Route::post('/ver-cancelaciones-chofer/{idChofer}', [AdminController::class, 'verCancelacionesPorChofer']);
+Route::post('/cancelar-traslado/{idTraslado}', [AdminController::class, 'cancelarTraslado']);
 
 
 // Rutas para el CRUD de Bancos
+// Referencia textual: "...datos de cualquier otra tabla base que el sistema requiera, como por ejemplo bancos."
+
 Route::prefix('bancos')->group(function () {
     Route::get('/', [BancoController::class, 'index']); // Obtener todos los bancos
     Route::get('/{id}', [BancoController::class, 'show']); // Obtener un banco por ID
@@ -82,7 +89,6 @@ Route::prefix('bancos')->group(function () {
 
 
 // FALTA ESTE ENDPOINT -----ENDPOINTS EN COLA----------
-Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados']);
 
 // FALTA TRABAJAR NADA EHCHO
 Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'recargaSaldo']);
@@ -110,16 +116,13 @@ Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'r
 // Referencia textual: "...cancelarle a los choferes los traslados, para ello se debe indicar la fecha del pago, la referencia y el monto pagado."
 // Ingresar puntuación a choferes:
 
-// Endpoint: /ingresar_puntuacion_chofer
-// Referencia textual: "...ingresan la puntuación a las pruebas tanto de los choferes..."
-// Ingresar puntuación a vehículos:
+
 
 // Endpoint: /ingresar_puntuacion_vehiculo
 // Referencia textual: "...pruebas tanto de los vehículos..."
 // Ingresar datos a tablas base (por ejemplo, bancos):
 
 // Endpoint: /ingresar_datos_tabla_base
-// Referencia textual: "...datos de cualquier otra tabla base que el sistema requiera, como por ejemplo bancos."
 // Ver recaudación por ganancias en un periodo de tiempo:
 
 // Endpoint: /recaudacion_ganancias

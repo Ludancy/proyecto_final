@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-// cliente table
+        // cliente table
         Schema::create('cliente', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
@@ -21,9 +21,9 @@ return new class extends Migration
             $table->string('cedula');
             $table->date('fechaNacimiento');
             $table->foreignId('idAuth')->constrained('auths')->onDelete('cascade');
+            $table->decimal('saldo', 10, 2)->default(0.00);  // Nueva columna saldo
             $table->timestamps();
         });
-
     }
 
     /**
@@ -33,6 +33,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('clientes');
+        Schema::dropIfExists('cliente');
     }
 };
+
