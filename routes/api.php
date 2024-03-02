@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PruebaController;
 use App\Http\Controllers\Api\VehiculoController;
 use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\BancoController;
+use App\Http\Controllers\Api\LugarController;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -97,6 +98,17 @@ Route::post('/ver-cancelaciones-chofer/{idChofer}', [AdminController::class, 've
 Route::post('/cancelar-traslado/{idTraslado}', [AdminController::class, 'cancelarTraslado']);
 
 
+Route::prefix('lugares')->group(function () {
+    Route::get('/', [LugarController::class, 'index']); // Obtener todos los lugares
+    Route::get('/{lugar}', [LugarController::class, 'show']); // Obtener un lugar por ID
+    Route::post('/register', [LugarController::class, 'store']); // Crear un nuevo lugar
+    Route::put('/{lugar}/update', [LugarController::class, 'update']); // Actualizar un lugar por ID
+    Route::delete('/{lugar}/delete', [LugarController::class, 'destroy']); // Eliminar un lugar por ID
+});
+
+Route::get('/calcular-costo-traslado/{idOrigen}/{idDestino}', [LugarController::class, 'calcularCostoTraslado']); // Eliminar un lugar por ID
+
+
 // Rutas para el CRUD de Bancos
 // Referencia textual: "...datos de cualquier otra tabla base que el sistema requiera, como por ejemplo bancos."
 
@@ -111,8 +123,5 @@ Route::prefix('bancos')->group(function () {
 
 
 // Pruebas
-
 Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'recargaSaldo']);
 
-
-// falta relacion de saldo y vehiculos

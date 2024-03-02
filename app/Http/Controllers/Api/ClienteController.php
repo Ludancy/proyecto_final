@@ -9,6 +9,8 @@ use App\Models\Cliente;
 use App\Models\Traslado;
 use App\Models\Banco;
 use App\Models\SaldoCliente;
+use App\Models\Chofer;
+use App\Models\Lugar;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller; // Asegúrate de incluir esta línea
@@ -56,48 +58,61 @@ class ClienteController extends Controller
         $cliente->user()->delete();
         return response()->json(['message' => 'Cliente eliminado con éxito.'], 200);
     }
-
     public function solicitarTraslado(Request $request, $idCliente)
     {
-        // Validar la solicitud
-        $request->validate([
-            'origen' => 'required',
-            'destino' => 'required',
-            'costo' => 'required|numeric',
-        ]);
+        try {
+            // Validar la solicitud
+            $request->validate([
+                'idOrigen' => 'required|exists:lugares,id',
+                'idDestino' => 'required|exists:lugares,id',
+                'costo' => 'required|numeric',
+            ]);
     
-        // Buscar al cliente por ID
-        $cliente = Cliente::find($idCliente);
+            // Buscar al cliente por ID
+            $cliente = Cliente::find($idCliente);
     
-        if (!$cliente) {
-            return response()->json(['message' => 'Cliente no encontrado.'], 404);
+            if (!$cliente) {
+                return response()->json(['message' => 'Cliente no encontrado.'], 404);
+            }
+    
+            // Buscar chofer aleatorio
+            $choferAleatorio = Chofer::inRandomOrder()->first();
+    
+            if (!$choferAleatorio) {
+                return response()->json(['message' => 'No hay choferes disponibles.'], 400);
+            }
+    
+            // Obtener el valor numérico de los lugares
+            $valorNumericoOrigen = Lugar::where('id', $request->idOrigen)->value('valor_numerico');
+            $valorNumericoDestino = Lugar::where('id', $request->idDestino)->value('valor_numerico');
+    
+            // Calcular el costo del traslado
+            $costoTraslado = abs($valorNumericoDestino - $valorNumericoOrigen);
+    
+            // Crear el traslado
+            $traslado = new Traslado([
+                'origen' => $request->idOrigen,
+                'destino' => $request->idDestino,
+                'costo' => $costoTraslado,
+                'estado' => 'Pendiente',
+                'idChofer' => $choferAleatorio->id,
+            ]);
+    
+            // Asignar el traslado al cliente
+            $cliente->traslados()->save($traslado);
+    
+            // Actualizar saldos
+            $cliente->decrement('saldo', $costoTraslado);
+            $choferAleatorio->increment('saldo', $costoTraslado * 0.7); // 70% para el chofer
+    
+            return response()->json($traslado, 201);
+    
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(['error' => $e->getMessage()]);
         }
-    
-        // Buscar chofer aleatorio
-        $choferAleatorio = Chofer::inRandomOrder()->first();
-    
-        if (!$choferAleatorio) {
-            return response()->json(['message' => 'No hay choferes disponibles.'], 400);
-        }
-    
-        // Crear el traslado
-        $traslado = new Traslado([
-            'origen' => $request->origen,
-            'destino' => $request->destino,
-            'costo' => $request->costo,
-            'estado' => 'Pendiente',
-            'idChofer' => $choferAleatorio->id,
-        ]);
-    
-        // Asignar el traslado al cliente
-        $cliente->traslados()->save($traslado);
-    
-        // Actualizar saldos
-        $cliente->decrement('saldo', $request->costo);
-        $choferAleatorio->increment('saldo', $request->costo * 0.7); // 70% para el chofer
-    
-        return response()->json($traslado, 201);
     }
+    
 
     public function recargaSaldo(Request $request, $idCliente)
     {
