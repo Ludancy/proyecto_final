@@ -18,8 +18,7 @@ class Vehiculo extends Model
         'anio_fabricacion',
         'estado_vehiculo',
         'estado_actual'
-
-        // Otros campos según tus necesidades
+        
     ];
 
     // Relación con la tabla de Chofer

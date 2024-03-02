@@ -19,7 +19,7 @@ class Chofer extends Model
         'entidadBancaria',
         'numeroCuenta',
         'saldo',
-        // Otros campos según tus necesidades
+        
     ];
     
 

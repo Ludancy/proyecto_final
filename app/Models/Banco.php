@@ -14,7 +14,7 @@ class Banco extends Model
     protected $fillable = [
         'nombre',
         'codigo',
-        // Otros campos según tus necesidades
+        
     ];
 
     // Relación con las recargas de saldo

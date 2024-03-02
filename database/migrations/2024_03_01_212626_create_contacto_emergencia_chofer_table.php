@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('idChofer')->constrained('chofers')->onDelete('CASCADE');
             $table->string('nombre');
             $table->string('telefono');
-            // Otros campos según tus necesidades
+            
             $table->timestamps();
         });
     }

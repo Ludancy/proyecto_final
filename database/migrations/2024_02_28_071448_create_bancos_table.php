@@ -14,7 +14,7 @@ class CreateBancosTable extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('codigo');
-            // Otros campos según tus necesidades
+            
             $table->timestamps();
         });
     }

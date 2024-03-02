@@ -13,7 +13,7 @@ class CreatePruebaVehiculosTable extends Migration
             $table->foreignId('idVehiculo')->constrained('vehiculos')->onDelete('cascade');
             $table->decimal('calificacion', 5, 2);
             $table->timestamp('fecha_creacion')->useCurrent();
-            // Otros campos según tus necesidades
+            
         });
     }
 

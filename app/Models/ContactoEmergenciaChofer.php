@@ -14,7 +14,7 @@ class ContactoEmergenciaChofer extends Model
         'idChofer', // Supongo que esto es una relación con el modelo Chofer
         'nombre',
         'telefono',
-        // Otros campos según tus necesidades
+        
     ];
 
     // Relación con el chofer

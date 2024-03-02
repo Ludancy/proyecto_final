@@ -15,7 +15,7 @@ class PruebaVehiculo extends Model
     protected $fillable = [
         'idVehiculo',
         'calificacion',
-        // Otros campos según tus necesidades
+        
     ];
 
     // Relación con el modelo Vehiculo

@@ -17,7 +17,7 @@ class CreateSaldoClientesTable extends Migration
             $table->date('fecha_recarga');
             $table->string('referencia');
             $table->decimal('monto', 10, 2);
-            // Otros campos según tus necesidades
+            
             $table->timestamps();
         });
     }
