@@ -36,7 +36,6 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
 });
 
 
-
 //AUTH
 Route::get('users', [AuthController::class, 'allUsers']);
 
@@ -115,3 +114,5 @@ Route::prefix('bancos')->group(function () {
 
 Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'recargaSaldo']);
 
+
+// falta relacion de saldo y vehiculos

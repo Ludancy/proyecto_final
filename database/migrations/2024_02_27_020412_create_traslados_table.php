@@ -14,11 +14,16 @@ class CreateTrasladosTable extends Migration
             $table->id();
             $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade');
             $table->foreignId('idCliente')->constrained('cliente')->onDelete('cascade');
-            $table->string('origen');
-            $table->string('destino');
+            $table->unsignedBigInteger('origen');
+            $table->unsignedBigInteger('destino');
             $table->decimal('costo', 10, 2);
             $table->enum('estado', ['pendiente', 'realizado', 'cancelado'])->default('pendiente');
+            $table->unsignedBigInteger('idVehiculo')->nullable(); // Añadido para la relación con vehículos
             $table->timestamps();
+
+            $table->foreign('origen')->references('id')->on('lugares')->onDelete('cascade');
+            $table->foreign('destino')->references('id')->on('lugares')->onDelete('cascade');
+            $table->foreign('idVehiculo')->references('id')->on('vehiculos')->onDelete('set null'); // Set null si no hay vehículo asignado
         });
     }
 

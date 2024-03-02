@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('idAuth')->constrained('auths')->onDelete('CASCADE');
             $table->string('entidadBancaria')->nullable(); // Agregado para la entidad bancaria
             $table->string('numeroCuenta')->nullable(); // Agregado para el número de cuenta
+            $table->decimal('saldo', 10, 2)->default(0); // Agregado para el saldo
             $table->timestamps();
         });
     }

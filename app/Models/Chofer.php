@@ -18,8 +18,10 @@ class Chofer extends Model
         'idAuth',
         'entidadBancaria',
         'numeroCuenta',
+        'saldo',
         // Otros campos según tus necesidades
     ];
+    
 
 // Relación con la entidad bancaria
 public function cuentasBancarias()

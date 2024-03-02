@@ -64,7 +64,6 @@ class ClienteController extends Controller
             'origen' => 'required',
             'destino' => 'required',
             'costo' => 'required|numeric',
-            'idChofer' => 'required|exists:chofers,id', // Validar que el idChofer exista en la tabla choferes
         ]);
     
         // Buscar al cliente por ID
@@ -74,20 +73,29 @@ class ClienteController extends Controller
             return response()->json(['message' => 'Cliente no encontrado.'], 404);
         }
     
+        // Buscar chofer aleatorio
+        $choferAleatorio = Chofer::inRandomOrder()->first();
+    
+        if (!$choferAleatorio) {
+            return response()->json(['message' => 'No hay choferes disponibles.'], 400);
+        }
+    
+        // Crear el traslado
         $traslado = new Traslado([
             'origen' => $request->origen,
             'destino' => $request->destino,
             'costo' => $request->costo,
-            'estado' => 'Pendiente', // Estado inicial del traslado
-            'idChofer' => $request->idChofer, // Asegúrate de proporcionar el idChofer
+            'estado' => 'Pendiente',
+            'idChofer' => $choferAleatorio->id,
         ]);
-        
-        // Asociar el traslado al cliente
+    
+        // Asignar el traslado al cliente
         $cliente->traslados()->save($traslado);
-        
-        // Asociar el chofer al traslado
-        $traslado->chofer()->associate($request->idChofer)->save();
-        
+    
+        // Actualizar saldos
+        $cliente->decrement('saldo', $request->costo);
+        $choferAleatorio->increment('saldo', $request->costo * 0.7); // 70% para el chofer
+    
         return response()->json($traslado, 201);
     }
 
