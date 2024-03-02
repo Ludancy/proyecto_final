@@ -15,7 +15,9 @@ class CreateVehiculosTable extends Migration
             $table->string('color');
             $table->string('placa')->unique();
             $table->integer('anio_fabricacion');
-            $table->string('estado_vehiculo');
+            $table->enum('estado_vehiculo', ['Pendiente', 'Aprobado'])->default('Pendiente');
+            $table->enum('estado_actual', ['activo', 'inactivo'])->default('activo');
+
             // Otros campos según tus necesidades
             $table->timestamps();
         });

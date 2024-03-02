@@ -17,6 +17,8 @@ class Vehiculo extends Model
         'placa',
         'anio_fabricacion',
         'estado_vehiculo',
+        'estado_actual'
+
         // Otros campos según tus necesidades
     ];
 

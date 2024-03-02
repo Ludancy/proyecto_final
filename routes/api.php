@@ -72,9 +72,9 @@ Route::delete('vehiculos/{id}/delete', [VehiculoController::class, 'delete']);
 
     Route::post('pruebas/evaluacion-vehiculo', [VehiculoController::class, 'evaluacionVehiculo']);
     // Obtener la lista de vehículos aprobados
-    Route::get('/vehiculos/aprobados', [VehiculoController::class, 'obtenerVehiculosAprobados']);
+    Route::get('/vehiculosAprobados', [VehiculoController::class, 'obtenerVehiculosAprobados']);
     // Obtener la lista de vehículos pendientes de revisión
-    Route::get('/vehiculos/pendientes-revision', [VehiculoController::class, 'obtenerVehiculosPendientesRevision']);
+    Route::get('/vehiculosRevisar', [VehiculoController::class, 'obtenerVehiculosPendientesRevision']);
 
 
 // Clientes
@@ -84,6 +84,9 @@ Route::prefix('clientes')->group(function () {
     Route::put('/{id}', [ClienteController::class, 'update']); // Actualizar un cliente por ID
     Route::delete('/{id}', [ClienteController::class, 'destroy']); // Eliminar un cliente por ID
 });
+
+Route::get('/traslado/cliente/{clienteId}', [ClienteController::class, 'obtenerDatosTrasladoCliente']);
+
 Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'solicitarTraslado']);
 Route::get('cliente/traslados/{clienteId}', [ClienteController::class, 'trasladosCliente']);
 Route::get('/historial-recargas', [ClienteController::class, 'historialRecargasCliente']);

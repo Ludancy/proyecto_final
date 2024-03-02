@@ -60,9 +60,12 @@ class VehiculoController extends Controller
 
         // Realizar validaciones y actualizaciones según tus necesidades
         $vehiculo->update([
-            'marca' => $request->input('marca'),
-            'color' => $request->input('color'),
-            'placa' => $request->input('placa'),
+            'idChofer' => $request->idChofer,
+            'marca' => $request->marca,
+            'color' => $request->color,
+            'placa' => $request->placa,
+            'anio_fabricacion' => $request->anio_fabricacion,
+            'estado_vehiculo' => $request->estado_vehiculo,
             // ... Otras actualizaciones según tus necesidades
         ]);
 
@@ -107,17 +110,27 @@ public function evaluacionVehiculo(Request $request)
             // Agrega otros campos según tus necesidades
         ]);
 
+        // Obtener el vehículo
+        $vehiculo = Vehiculo::find($request->idVehiculo);
+
+        // Actualizar el estado del vehículo a 'Aprobado' si la calificación es mayor que 65
+        if ($request->calificacion > 65) {
+            $vehiculo->estado_vehiculo = 'Aprobado';
+            $vehiculo->save();
+        }
+
         return response()->json(['message' => 'Evaluación de vehículo registrada con éxito'], 201);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
 
+
     // Obtener la lista de vehículos aprobados
     public function obtenerVehiculosAprobados()
     {
         // Filtrar los vehículos por estado "Activo" y con alguna prueba aprobada (calificación >= 65)
-        $vehiculosAprobados = Vehiculo::where('estado_vehiculo', 'Activo')
+        $vehiculosAprobados = Vehiculo::where('estado_vehiculo', 'Aprobado')
             ->whereHas('pruebasVehiculo', function ($query) {
                 $query->where('calificacion', '>=', 65);
             })

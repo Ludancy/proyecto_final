@@ -201,36 +201,53 @@ public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
     return response()->json($evaluacionVehiculo);
 }
 
-    public function revisarTrasladosRealizados(Request $request, $choferId)
-        {
-            try {
-                // Obtener el chofer por ID
-                $chofer = Chofer::find($choferId);
+public function revisarTrasladosRealizados(Request $request, $choferId)
+{
+    try {
+        // Obtener el chofer por ID
+        $chofer = Chofer::find($choferId);
 
-                // Validar si el chofer existe
-                if (!$chofer) {
-                    return response()->json(['message' => 'Chofer no encontrado.'], 404);
-                }
-
-
-                // Validar datos de la solicitud
-                $request->validate([
-                    'fecha_inicio' => 'required|date',
-                    'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-                ]);
-
-                // Obtener los traslados realizados por el chofer en un período de tiempo
-                $traslados = Traslado::where('idChofer', $chofer->id)
-                    ->whereBetween('created_at', [$request->fecha_inicio, $request->fecha_fin])
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-
-                // Puedes personalizar la respuesta según tus necesidades
-                return response()->json(['traslados_realizados' => $traslados]);
-            } catch (\Exception $e) {
-                return response()->json(['error' => $e->getMessage()], 500);
-            }
+        // Validar si el chofer existe
+        if (!$chofer) {
+            return response()->json(['message' => 'Chofer no encontrado.'], 404);
         }
+
+        // Validar datos de la solicitud
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+        ]);
+
+        // Obtener los traslados realizados por el chofer en un período de tiempo
+        $traslados = Traslado::select(
+            'traslados.id',
+            'idChofer',
+            'idCliente',
+            'costo',
+            'estado',
+            'idVehiculo',
+            'traslados.created_at',
+            'traslados.updated_at',
+            'origen',
+            'destino',
+            \DB::raw('lugares.nombre as origennombre'),
+            \DB::raw('destinos.nombre as destinonombre')
+        )
+        ->leftJoin('lugares', 'traslados.origen', '=', 'lugares.id')
+        ->leftJoin('lugares as destinos', 'traslados.destino', '=', 'destinos.id')
+        ->where('idChofer', $chofer->id)
+        ->whereBetween('traslados.created_at', [$request->fecha_inicio, $request->fecha_fin])
+        ->orderBy('traslados.created_at', 'desc')
+        ->get();
+
+        return response()->json(['traslados_realizados' => $traslados]);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
 
         public function trasladosCanceladosChofer($choferId)
         {

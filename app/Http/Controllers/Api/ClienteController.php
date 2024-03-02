@@ -10,6 +10,7 @@ use App\Models\Traslado;
 use App\Models\Banco;
 use App\Models\SaldoCliente;
 use App\Models\Chofer;
+use App\Models\Vehiculo;
 use App\Models\Lugar;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -89,13 +90,23 @@ class ClienteController extends Controller
             // Calcular el costo del traslado
             $costoTraslado = abs($valorNumericoDestino - $valorNumericoOrigen);
     
+            // Buscar vehículo activo del chofer
+            $vehiculoChofer = Vehiculo::where('idChofer', $choferAleatorio->id)
+                ->where('estado_actual', 'activo')
+                ->first();
+    
+            if (!$vehiculoChofer) {
+                return response()->json(['message' => 'No hay vehículos disponibles para este chofer.'], 400);
+            }
+    
             // Crear el traslado
             $traslado = new Traslado([
                 'origen' => $request->idOrigen,
                 'destino' => $request->idDestino,
-                'costo' => $costoTraslado,
+                'costo' => $request->costo,
                 'estado' => 'Pendiente',
                 'idChofer' => $choferAleatorio->id,
+                'idVehiculo' => $vehiculoChofer->id,
             ]);
     
             // Asignar el traslado al cliente
@@ -209,6 +220,27 @@ class ClienteController extends Controller
             return response()->json(['historial_recargas' => $historialRecargas]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function obtenerDatosTrasladoCliente($clienteId)
+    {
+        try {
+            // Buscar los traslados del cliente
+            $traslados = Traslado::with(['chofer', 'vehiculo'])
+                ->where('idCliente', $clienteId)
+                ->get();
+
+            if ($traslados->isEmpty()) {
+                return response(["message" => "No hay traslados para este cliente"], Response::HTTP_NOT_FOUND);
+            }
+
+            // Devolver los datos de los traslados, chofer y vehículo asociado
+            return response()->json($traslados, 200);
+
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
