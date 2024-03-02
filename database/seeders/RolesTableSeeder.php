@@ -18,9 +18,10 @@ class RolesTableSeeder extends Seeder
 
         // Inserta roles predeterminados
         DB::table('roles')->insert([
+            ['nombre' => 'PersonalAdmin', 'estado' => 'activo'],
             ['nombre' => 'Cliente', 'estado' => 'activo'],
             ['nombre' => 'Chofer', 'estado' => 'activo'],
-            ['nombre' => 'PersonalAdmin', 'estado' => 'activo'],
+
             // Puedes agregar más roles según sea necesario
         ]);
 

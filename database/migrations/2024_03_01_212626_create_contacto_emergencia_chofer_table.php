@@ -13,15 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        // cliente table
-        Schema::create('cliente', function (Blueprint $table) {
+        // contacto_emergencia_chofer table
+        Schema::create('contacto_emergencia_chofer', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('idChofer')->constrained('chofers')->onDelete('CASCADE');
             $table->string('nombre');
-            $table->string('apellido');
-            $table->string('cedula');
-            $table->date('fechaNacimiento');
-            $table->foreignId('idAuth')->constrained('auths')->onDelete('cascade');
-            $table->decimal('saldo', 10, 2)->default(0.00);  // Nueva columna saldo
+            $table->string('telefono');
+            
             $table->timestamps();
         });
     }
@@ -33,7 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cliente');
+        Schema::dropIfExists('contacto_emergencia_chofer');
     }
 };
-

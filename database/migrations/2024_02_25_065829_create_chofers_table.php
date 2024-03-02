@@ -13,17 +13,19 @@ return new class extends Migration
      */
     public function up()
     {
-    // chofer table
-    Schema::create('chofers', function (Blueprint $table) {
-        $table->id();
-        $table->string('nombre');
-        $table->string('apellido');
-        $table->string('cedula');
-        $table->date('fechaNacimiento');
-        $table->foreignId('idAuth')->constrained('auths');
-        $table->timestamps();
-    });
-
+        // chofer table
+        Schema::create('chofers', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre')->nullable();
+            $table->string('apellido')->nullable();
+            $table->string('cedula')->nullable();
+            $table->date('fechaNacimiento')->nullable();
+            $table->foreignId('idAuth')->constrained('auths')->onDelete('CASCADE');
+            $table->string('entidadBancaria')->nullable(); // Agregado para la entidad bancaria
+            $table->string('numeroCuenta')->nullable(); // Agregado para el número de cuenta
+            $table->decimal('saldo', 10, 2)->default(0); // Agregado para el saldo
+            $table->timestamps();
+        });
     }
 
     /**
@@ -36,3 +38,4 @@ return new class extends Migration
         Schema::dropIfExists('chofers');
     }
 };
+
