@@ -6,21 +6,28 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreateBancosTable extends Migration
 {
     public function up()
     {
-        Schema::create('bancos', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');
-            $table->string('codigo');
-            
-            $table->timestamps();
-        });
+        // Crear la tabla de Bancos
+        DB::statement('
+            CREATE TABLE bancos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(255),
+                codigo VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('bancos');
+        // Eliminar la tabla de Bancos
+        DB::statement('DROP TABLE IF EXISTS bancos');
     }
 }
+

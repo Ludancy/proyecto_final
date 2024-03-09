@@ -6,29 +6,42 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreateTrasladosTable extends Migration
 {
     public function up()
     {
-        Schema::create('traslados', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade');
-            $table->foreignId('idCliente')->constrained('cliente')->onDelete('cascade');
-            $table->unsignedBigInteger('origen');
-            $table->unsignedBigInteger('destino');
-            $table->decimal('costo', 10, 2);
-            $table->enum('estado', ['pendiente', 'realizado', 'cancelado'])->default('pendiente');
-            $table->unsignedBigInteger('idVehiculo')->nullable(); // Añadido para la relación con vehículos
-            $table->timestamps();
-
-            $table->foreign('origen')->references('id')->on('lugares')->onDelete('cascade');
-            $table->foreign('destino')->references('id')->on('lugares')->onDelete('cascade');
-            $table->foreign('idVehiculo')->references('id')->on('vehiculos')->onDelete('set null'); // Set null si no hay vehículo asignado
-        });
+        // Crear la tabla traslados
+        DB::statement('
+            CREATE TABLE traslados (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                idChofer INT,
+                idCliente INT,
+                origen INT,
+                destino INT,
+                fecha_pago DATE NULL,
+                referencia VARCHAR(255) NULL,
+                monto_pagado DECIMAL(10, 2) NULL,
+                costo DECIMAL(10, 2),
+                estado ENUM("pendiente", "realizado", "cancelado") DEFAULT "pendiente",
+                idVehiculo INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE,
+                FOREIGN KEY (idCliente) REFERENCES cliente(id) ON DELETE CASCADE,
+                FOREIGN KEY (origen) REFERENCES lugares(id) ON DELETE CASCADE,
+                FOREIGN KEY (destino) REFERENCES lugares(id) ON DELETE CASCADE,
+                FOREIGN KEY (idVehiculo) REFERENCES vehiculos(id) ON DELETE SET NULL
+            )
+        ');
     }
+    
 
     public function down()
     {
-        Schema::dropIfExists('traslados');
+        // Eliminar la tabla traslados
+        DB::statement('DROP TABLE IF EXISTS traslados');
     }
 }
+
