@@ -129,3 +129,26 @@ Route::prefix('bancos')->group(function () {
 // Pruebas
 Route::post('/clientes/{idCliente}/recarga-saldo', [ClienteController::class, 'recargaSaldo']);
 
+
+
+// Obtener todas las evaluaciones psicológicas de todos los choferes
+Route::get('/evaluaciones-psicologicas', [ChoferController::class, 'indexTodasEvaluacionesPsicologicas']);
+
+// Eliminar una evaluación psicológica
+Route::delete('/evaluaciones-psicologicas/{id}', [ChoferController::class, 'deleteEvaluacionPsicologica']);
+
+// Actualizar una evaluación psicológica
+Route::put('/evaluaciones-psicologicas/{id}', [ChoferController::class, 'updateEvaluacionPsicologica']);
+
+
+// Obtener todas las evaluaciones de vehículos
+Route::get('/evaluaciones-vehiculos', [VehiculoController::class, 'index']);
+
+// Obtener una evaluación de vehículo específica
+Route::get('/evaluaciones-vehiculos/{id}', [VehiculoController::class, 'show']);
+
+// Actualizar una evaluación de vehículo
+Route::put('/evaluaciones-vehiculos/{id}', [VehiculoController::class, 'update']);
+
+// Eliminar una evaluación de vehículo
+Route::delete('/evaluaciones-vehiculos/{id}', [VehiculoController::class, 'destroy']);

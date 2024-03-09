@@ -88,6 +88,68 @@ class ChoferController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // Obtener todas las evaluaciones psicológicas de todos los choferes
+    public function indexTodasEvaluacionesPsicologicas()
+    {
+        try {
+            $evaluaciones = DB::table('pruebachofer')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if ($evaluaciones->isEmpty()) {
+                return response()->json(['message' => 'No se encontraron evaluaciones psicológicas.'], 404);
+            }
+
+            return response()->json($evaluaciones);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteEvaluacionPsicologica($id)
+    {
+        try {
+            // Eliminar la evaluación psicológica
+            DB::table('pruebachofer')->where('idChofer', $id)->delete();
+
+            return response()->json(['message' => 'Evaluación psicológica eliminada correctamente.'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+    public function updateEvaluacionPsicologica(Request $request, $id)
+    {
+        // Validación de datos
+        $validator = Validator::make($request->all(), [
+            'calificacion' => 'required|numeric|min:0|max:100',
+            // Agrega otras reglas de validación según tus necesidades
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        try {
+            // Actualizar la evaluación psicológica
+            DB::table('pruebachofer')
+                ->where('idChofer', $id)
+                ->update([
+                    'calificacion' => $request->input('calificacion'),
+                    // Agrega otros campos según tus necesidades
+                ]);
+
+            // Obtener la evaluación psicológica actualizada
+            $evaluacion = DB::table('pruebachofer')->where('idChofer', $id)->first();
+
+            return response()->json($evaluacion, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function getChoferes()
     {
         try {

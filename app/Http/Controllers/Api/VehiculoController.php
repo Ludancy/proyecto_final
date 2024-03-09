@@ -104,6 +104,90 @@ class VehiculoController extends Controller
     }
 
 
+    // Obtener todas las evaluaciones de vehículos
+    public function index()
+    {
+        try {
+            $evaluaciones = DB::table('pruebavehiculo')->get();
+            return response()->json($evaluaciones, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // Obtener una evaluación de vehículo específica
+    public function show($id)
+    {
+        try {
+            $evaluacion = DB::table('pruebavehiculo')->find($id);
+
+            if (!$evaluacion) {
+                return response()->json(['message' => 'Evaluación de vehículo no encontrada.'], 404);
+            }
+
+            return response()->json($evaluacion, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+// Actualizar una evaluación de vehículo
+public function update(Request $request, $id)
+{
+    $validator = Validator::make($request->all(), [
+        'calificacion' => 'required|numeric|min:0|max:100',
+        // Agrega otras reglas de validación según tus necesidades
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()], 400);
+    }
+
+    try {
+        // Verificar si la evaluación de vehículo existe
+        $evaluacion = DB::table('pruebavehiculo')->find($id);
+
+        if (!$evaluacion) {
+            return response()->json(['message' => 'Evaluación de vehículo no encontrada.'], 404);
+        }
+
+        // Actualizar la evaluación de vehículo
+        DB::table('pruebavehiculo')
+            ->where('id', $id)
+            ->update([
+                'calificacion' => $request->calificacion,
+                // Agrega otros campos según tus necesidades
+            ]);
+
+        // Obtener la evaluación de vehículo actualizada
+        $evaluacionActualizada = DB::table('pruebavehiculo')->find($id);
+
+        return response()->json($evaluacionActualizada, 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+// Eliminar una evaluación de vehículo
+public function destroy($id)
+{
+    try {
+        // Verificar si la evaluación de vehículo existe
+        $evaluacion = DB::table('pruebavehiculo')->find($id);
+
+        if (!$evaluacion) {
+            return response()->json(['message' => 'Evaluación de vehículo no encontrada.'], 404);
+        }
+
+        // Eliminar la evaluación de vehículo
+        DB::table('pruebavehiculo')->where('id', $id)->delete();
+
+        return response()->json(['message' => 'Evaluación de vehículo eliminada correctamente.'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
 
 public function evaluacionVehiculo(Request $request)
 {
