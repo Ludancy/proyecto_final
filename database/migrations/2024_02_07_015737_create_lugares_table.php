@@ -5,23 +5,31 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+use Illuminate\Support\Facades\DB;
+
+class CreateLugaresTable extends Migration
 {
     public function up()
     {
-        Schema::create('lugares', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');
-            $table->decimal('valor_numerico', 10, 2); // Ajusta la precisión según tus necesidades
-            $table->double('latitud')->nullable();
-            $table->double('longitud')->nullable();
-            $table->timestamps();
-        });
+        // Crear la tabla de lugares
+        DB::statement('
+            CREATE TABLE lugares (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(255),
+                valor_numerico DECIMAL(10, 2),
+                latitud DOUBLE NULL,
+                longitud DOUBLE NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('lugares');
+        // Eliminar la tabla de lugares
+        DB::statement('DROP TABLE IF EXISTS lugares');
     }
-};
+}
+
 

@@ -88,6 +88,68 @@ class ChoferController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // Obtener todas las evaluaciones psicológicas de todos los choferes
+    public function indexTodasEvaluacionesPsicologicas()
+    {
+        try {
+            $evaluaciones = DB::table('pruebachofer')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if ($evaluaciones->isEmpty()) {
+                return response()->json(['message' => 'No se encontraron evaluaciones psicológicas.'], 404);
+            }
+
+            return response()->json($evaluaciones);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteEvaluacionPsicologica($id)
+    {
+        try {
+            // Eliminar la evaluación psicológica
+            DB::table('pruebachofer')->where('idChofer', $id)->delete();
+
+            return response()->json(['message' => 'Evaluación psicológica eliminada correctamente.'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+    public function updateEvaluacionPsicologica(Request $request, $id)
+    {
+        // Validación de datos
+        $validator = Validator::make($request->all(), [
+            'calificacion' => 'required|numeric|min:0|max:100',
+            // Agrega otras reglas de validación según tus necesidades
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        try {
+            // Actualizar la evaluación psicológica
+            DB::table('pruebachofer')
+                ->where('idChofer', $id)
+                ->update([
+                    'calificacion' => $request->input('calificacion'),
+                    // Agrega otros campos según tus necesidades
+                ]);
+
+            // Obtener la evaluación psicológica actualizada
+            $evaluacion = DB::table('pruebachofer')->where('idChofer', $id)->first();
+
+            return response()->json($evaluacion, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function getChoferes()
     {
         try {
@@ -267,7 +329,7 @@ class ChoferController extends Controller
             $cuentasBancarias = DB::table('banco_chofer')
                 ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
                 ->where('banco_chofer.idChofer', $idChofer)
-                ->select('bancos.nombre', 'bancos.codigo as nroCuenta')
+                ->select('bancos.nombre', 'banco_chofer.nroCuenta')
                 ->get();
 
             return response()->json($cuentasBancarias, 200);
@@ -277,163 +339,200 @@ class ChoferController extends Controller
         }
     }
 
-public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
-{
-    // Validar que el chofer exista
-    $chofer = Chofer::with(['vehiculos' => function ($query) use ($idVehiculo) {
-        $query->where('id', $idVehiculo);
-    }])->find($idChofer);
-
-    if (!$chofer) {
-        return response()->json(['message' => 'No se encontró el chofer.'], 404);
-    }
-
-    // Obtener el vehículo asociado al chofer
-    $vehiculo = $chofer->vehiculos->first();
-
-    if (!$vehiculo || $vehiculo->id != $idVehiculo) {
-        return response()->json(['message' => 'No se encontró un vehículo asociado al chofer.'], 404);
-    }
-
-    // Obtener la última evaluación de vehículo asociada al vehículo del chofer
-    $evaluacionVehiculo = PruebaVehiculo::where('idVehiculo', $idVehiculo)
-        ->first();
-
-    if (!$evaluacionVehiculo) {
-        return response()->json(['message' => 'No se encontró ninguna evaluación de vehículo para el chofer.'], 404);
-    }
-
-    return response()->json($evaluacionVehiculo);
-}
-
-public function revisarTrasladosRealizados(Request $request, $choferId)
-{
-    try {
-        // Obtener el chofer por ID
-        $chofer = Chofer::find($choferId);
-
-        // Validar si el chofer existe
-        if (!$chofer) {
-            return response()->json(['message' => 'Chofer no encontrado.'], 404);
-        }
-
-        // Validar datos de la solicitud
-        $request->validate([
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-        ]);
-
-        // Obtener los traslados realizados por el chofer en un período de tiempo
-        $traslados = Traslado::select(
-            'traslados.id',
-            'idChofer',
-            'idCliente',
-            'costo',
-            'estado',
-            'idVehiculo',
-            'traslados.created_at',
-            'traslados.updated_at',
-            'origen',
-            'destino',
-            \DB::raw('lugares.nombre as origennombre'),
-            \DB::raw('destinos.nombre as destinonombre')
-        )
-        ->leftJoin('lugares', 'traslados.origen', '=', 'lugares.id')
-        ->leftJoin('lugares as destinos', 'traslados.destino', '=', 'destinos.id')
-        ->where('idChofer', $chofer->id)
-        ->whereBetween('traslados.created_at', [$request->fecha_inicio, $request->fecha_fin])
-        ->orderBy('traslados.created_at', 'desc')
-        ->get();
-
-        return response()->json(['traslados_realizados' => $traslados]);
-
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-}
-
-
-
-        public function trasladosCanceladosChofer($choferId)
-        {
-            try {
-                $trasladosCancelados = Traslado::where('idChofer', $choferId)
-                    ->where('estado', 'cancelado')
-                    ->get();
+    public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
+    {
+        try {
+            // Validar que el chofer exista
+            $chofer = DB::table('chofers')
+                ->join('vehiculos', 'chofers.id', '=', 'vehiculos.idChofer')
+                ->where('chofers.id', $idChofer)
+                ->where('vehiculos.id', $idVehiculo)
+                ->select('chofers.*', 'vehiculos.*')
+                ->first();
     
-                return response()->json(['trasladosCancelados' => $trasladosCancelados]);
-            } catch (\Exception $e) {
-                return response()->json(['error' => $e->getMessage()], 500);
+            if (!$chofer) {
+                return response()->json(['message' => 'No se encontró el chofer o el vehículo asociado.'], 404);
             }
-        }
     
-        // Listado de Traslados Pendientes por Cancelar
-        public function trasladosPendientesCancelarChofer($choferId)
-        {
-            try {
-                $trasladosPendientes = Traslado::where('idChofer', $choferId)
-                    ->where('estado', 'pendiente') // Ajusta según la lógica de tu aplicación
-                    ->get();
+            // Obtener la última evaluación de vehículo asociada al vehículo del chofer
+            $evaluacionVehiculo = DB::table('pruebaVehiculo')
+                ->where('idVehiculo', $idVehiculo)
+                ->orderBy('fecha_creacion', 'desc')
+                ->first();
     
-                return response()->json(['trasladosPendientes' => $trasladosPendientes]);
-            } catch (\Exception $e) {
-                return response()->json(['error' => $e->getMessage()], 500);
+            if (!$evaluacionVehiculo) {
+                return response()->json(['message' => 'No se encontró ninguna evaluación de vehículo para el chofer.'], 404);
             }
+    
+            return response()->json($evaluacionVehiculo);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
 
-        public function agregarContactosChofer(Request $request, $idChofer)
-        {
+    public function revisarTrasladosRealizados(Request $request, $choferId)
+    {
+        try {
+            // Obtener el chofer por ID
+            $chofer = DB::table('chofers')->where('id', $choferId)->first();
+    
+            // Validar si el chofer existe
+            if (!$chofer) {
+                return response()->json(['message' => 'Chofer no encontrado.'], 404);
+            }
+    
+            // Validar datos de la solicitud
+            $request->validate([
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            ]);
+    
+            // Obtener los traslados realizados por el chofer en un período de tiempo
+            $traslados = DB::table('traslados')
+                ->select(
+                    'traslados.id',
+                    'idChofer',
+                    'idCliente',
+                    'costo',
+                    'estado',
+                    'idVehiculo',
+                    'traslados.created_at',
+                    'traslados.updated_at',
+                    'origen',
+                    'destino',
+                    'lugares.nombre as origennombre',
+                    'destinos.nombre as destinonombre'
+                )
+                ->leftJoin('lugares', 'traslados.origen', '=', 'lugares.id')
+                ->leftJoin('lugares as destinos', 'traslados.destino', '=', 'destinos.id')
+                ->where('idChofer', $chofer->id)
+                ->whereBetween('traslados.created_at', [$request->fecha_inicio, $request->fecha_fin])
+                ->orderBy('traslados.created_at', 'desc')
+                ->get();
+    
+            return response()->json(['traslados_realizados' => $traslados]);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+    public function trasladosCanceladosChofer($choferId)
+    {
+        try {
+            $trasladosCancelados = DB::table('traslados')
+                ->where('idChofer', $choferId)
+                ->where('estado', 'cancelado')
+                ->get();
+    
+            return response()->json(['trasladosCancelados' => $trasladosCancelados]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    public function trasladosPendientesCancelarChofer($choferId)
+    {
+        try {
+            $trasladosPendientes = DB::table('traslados')
+                ->where('idChofer', $choferId)
+                ->where('estado', 'pendiente') // Ajusta según la lógica de tu aplicación
+                ->get();
+    
+            return response()->json(['trasladosPendientes' => $trasladosPendientes]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function agregarContactosChofer(Request $request, $idChofer)
+    {
+        try {
+            // Validar que el chofer exista
+            $chofer = DB::table('chofers')->where('id', $idChofer)->first();
+    
+            if (!$chofer) {
+                return response()->json(['message' => 'Chofer no encontrado'], 404);
+            }
+    
+            // Validar datos de la solicitud
+            $validator = Validator::make($request->all(), [
+                'contactosEmergencia' => 'required|array|min:2', // al menos dos contactos
+                'contactosEmergencia.*.nombre' => 'required|string|max:255',
+                'contactosEmergencia.*.telefono' => 'required|string|max:20',
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 400);
+            }
+    
+            // Iniciar transacción
+            DB::beginTransaction();
+    
             try {
-                // Validar que el chofer exista
-                $chofer = Chofer::findOrFail($idChofer);
-        
-                // Validar datos de la solicitud
-                $request->validate([
-                    'contactosEmergencia' => 'required|array|min:2', // al menos dos contactos
-                    'contactosEmergencia.*.nombre' => 'required|string|max:255',
-                    'contactosEmergencia.*.telefono' => 'required|string|max:20',
-                ]);
-        
                 // Agregar cada contacto de emergencia al chofer
                 foreach ($request->contactosEmergencia as $contacto) {
-                    ContactoEmergenciaChofer::create([
+                    DB::table('contacto_emergencia_chofer')->insert([
                         'idChofer' => $idChofer,
                         'nombre' => $contacto['nombre'],
                         'telefono' => $contacto['telefono'],
                         // Puedes agregar más campos según tus necesidades
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
-        
+    
+                // Confirmar la transacción
+                DB::commit();
+    
                 return response()->json(['message' => 'Contactos de emergencia agregados con éxito.']);
             } catch (\Exception $e) {
+                // Revertir la transacción en caso de error
+                DB::rollBack();
+    
                 return response()->json(['error' => $e->getMessage()], 500);
             }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        public function agregarBancoChofer(Request $request, $idChofer)
-{
-    try {
-        // Validar que el chofer exista
-        $chofer = Chofer::findOrFail($idChofer);
-
-        // Validar datos de la solicitud
-        $request->validate([
-            'idBanco' => 'required|exists:bancos,id',
-            'nroCuenta' => 'required|string|max:255',
-            'estado' => 'nullable|string|max:255',
-        ]);
-
-        // Agregar la relación entre el chofer y el banco
-        BancoChofer::create([
-            'idChofer' => $idChofer,
-            'idBanco' => $request->idBanco,
-            'nroCuenta' => $request->nroCuenta,
-            'estado' => $request->estado,
-        ]);
-
-        return response()->json(['message' => 'Datos bancarios del chofer agregados con éxito.']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
     }
-}
+    
+    public function agregarBancoChofer(Request $request, $idChofer)
+    {
+        try {
+            // Validar que el chofer exista
+            $choferExists = DB::table('chofers')->where('id', $idChofer)->exists();
+    
+            if (!$choferExists) {
+                return response()->json(['message' => 'Chofer no encontrado.'], 404);
+            }
+    
+            // Validar datos de la solicitud
+            $validator = Validator::make($request->all(), [
+                'idBanco' => 'required|exists:bancos,id',
+                'nroCuenta' => 'required|string|max:255',
+                'estado' => 'nullable|string|max:255',
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 400);
+            }
+    
+            // Agregar la relación entre el chofer y el banco
+            DB::table('banco_chofer')->insert([
+                'idChofer' => $idChofer,
+                'idBanco' => $request->idBanco,
+                'nroCuenta' => $request->nroCuenta,
+                'estado' => $request->estado,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+    
+            return response()->json(['message' => 'Datos bancarios del chofer agregados con éxito.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 class AddCamposToTrasladosTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::table('traslados', function (Blueprint $table) {
@@ -20,11 +15,6 @@ class AddCamposToTrasladosTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::table('traslados', function (Blueprint $table) {
@@ -34,3 +24,4 @@ class AddCamposToTrasladosTable extends Migration
         });
     }
 }
+

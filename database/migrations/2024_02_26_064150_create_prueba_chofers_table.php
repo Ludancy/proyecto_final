@@ -4,23 +4,29 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreatePruebaChofersTable extends Migration
 {
     public function up()
     {
-        Schema::create('pruebaChofer', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade'); // Reemplaza 'chofers' con el nombre real de la tabla de Chofer
-            $table->integer('calificacion');
-            $table->timestamp('fecha_creacion')->useCurrent();
-            // Agrega otros campos según tus necesidades
-            $table->timestamps();
-        });
+        // Crear la tabla de pruebaChofer
+        DB::statement('
+            CREATE TABLE pruebaChofer (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                idChofer INT,
+                calificacion INT,
+                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('pruebaChofer');
+        // Eliminar la tabla de pruebaChofer
+        DB::statement('DROP TABLE IF EXISTS pruebaChofer');
     }
 }
-

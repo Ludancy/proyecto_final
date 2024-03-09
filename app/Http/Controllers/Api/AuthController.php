@@ -52,7 +52,7 @@ class AuthController extends Controller
                         // Agrega aquí las validaciones necesarias para los campos específicos de personalAdmin
                     ]);
     
-                    DB::table('personal_admins')->insert([
+                    DB::table('personaladmin')->insert([
                         'idAuth' => $authId,
                         'nombre' => $request->nombre,
                         'apellido' => $request->apellido,
@@ -70,7 +70,7 @@ class AuthController extends Controller
                         // Agrega aquí las validaciones necesarias para los campos específicos de cliente
                     ]);
     
-                    DB::table('clientes')->insert([
+                    DB::table('cliente')->insert([
                         'idAuth' => $authId,
                         'nombre' => $request->nombre,
                         'apellido' => $request->apellido,
@@ -170,11 +170,11 @@ class AuthController extends Controller
         switch ($user->idRol) {
             case 1: // Personal Admin
                 // Obtener datos adicionales de personal admin
-                $additionalData = DB::table('personal_admins')->where('idAuth', $user->id)->first();
+                $additionalData = DB::table('personaladmin')->where('idAuth', $user->id)->first();
                 break;
             case 2: // Cliente
                 // Obtener datos adicionales de cliente
-                $additionalData = DB::table('clientes')->where('idAuth', $user->id)->first();
+                $additionalData = DB::table('cliente')->where('idAuth', $user->id)->first();
                 break;
             case 3: // Chofer
                 // Obtener datos adicionales de chofer

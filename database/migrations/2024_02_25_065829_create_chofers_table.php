@@ -4,38 +4,36 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+use Illuminate\Support\Facades\DB;
+
+class CreateChofersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
-        // chofer table
-        Schema::create('chofers', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre')->nullable();
-            $table->string('apellido')->nullable();
-            $table->string('cedula')->nullable();
-            $table->date('fechaNacimiento')->nullable();
-            $table->foreignId('idAuth')->constrained('auths')->onDelete('CASCADE');
-            $table->string('entidadBancaria')->nullable(); // Agregado para la entidad bancaria
-            $table->string('numeroCuenta')->nullable(); // Agregado para el número de cuenta
-            $table->decimal('saldo', 10, 2)->default(0); // Agregado para el saldo
-            $table->timestamps();
-        });
+        // Crear la tabla de chofer
+        DB::statement('
+            CREATE TABLE chofers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(255) NULL,
+                apellido VARCHAR(255) NULL,
+                cedula VARCHAR(255) NULL,
+                fechaNacimiento DATE NULL,
+                idAuth INT,
+                entidadBancaria VARCHAR(255) NULL,
+                numeroCuenta VARCHAR(255) NULL,
+                saldo DECIMAL(10, 2) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idAuth) REFERENCES auths(id) ON DELETE CASCADE
+            )
+        ');
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
-        Schema::dropIfExists('chofers');
+        // Eliminar la tabla de chofers
+        DB::statement('DROP TABLE IF EXISTS chofers');
     }
-};
+}
+
 

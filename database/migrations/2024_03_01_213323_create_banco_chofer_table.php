@@ -5,23 +5,31 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreateBancoChoferTable extends Migration
 {
     public function up()
     {
-        Schema::create('banco_chofer', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('idChofer')->constrained('chofers')->onDelete('CASCADE');
-            $table->foreignId('idBanco')->constrained('bancos')->onDelete('CASCADE');
-            $table->string('nroCuenta');
-            $table->string('estado')->nullable();
-            $table->timestamps();
-        });
+        // Crear la tabla banco_chofer
+        DB::statement('
+            CREATE TABLE banco_chofer (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                idChofer INT,
+                idBanco INT,
+                nroCuenta VARCHAR(255),
+                estado VARCHAR(255) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE,
+                FOREIGN KEY (idBanco) REFERENCES bancos(id) ON DELETE CASCADE
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('banco_chofer');
+        // Eliminar la tabla banco_chofer
+        DB::statement('DROP TABLE IF EXISTS banco_chofer');
     }
 }
-

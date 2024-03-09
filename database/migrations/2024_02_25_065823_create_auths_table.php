@@ -6,24 +6,32 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreateAuthsTable extends Migration
 {
     public function up()
     {
-        Schema::create('auths', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('idRol')->constrained('roles');
-            $table->string('correo')->unique();
-            $table->string('password');
-            $table->timestamp('fechaCreacion')->nullable();
-            $table->string('estado');
-            $table->timestamps();
-        });
+        // Crear la tabla de auths
+        DB::statement('
+            CREATE TABLE auths (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                idRol INT,
+                correo VARCHAR(255) UNIQUE,
+                password VARCHAR(255),
+                fechaCreacion TIMESTAMP NULL,
+                estado VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idRol) REFERENCES roles(id)
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('auths');
+        // Eliminar la tabla de auths
+        DB::statement('DROP TABLE IF EXISTS auths');
     }
 }
 
