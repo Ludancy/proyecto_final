@@ -8,6 +8,9 @@ use App\Models\Cliente;
 use App\Models\PersonalAdmin;
 use App\Models\Chofer;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
@@ -27,13 +30,16 @@ class AuthController extends Controller
             ]);
     
             // Crear el registro en la tabla 'auths'
-            $auth = User::create([
+            $authId = DB::table('auths')->insertGetId([
                 'correo' => $request->correo,
                 'password' => Hash::make($request->password),
                 'idRol' => $request->idRol,
                 'fechaCreacion' => now(),
                 'estado' => 'activo',
             ]);
+    
+            // Obtener los datos del registro creado
+            $authData = DB::table('auths')->where('id', $authId)->first();
     
             // Según el rol, insertar en la tabla específica (chofer, cliente, personalAdmin)
             switch ($request->idRol) {
@@ -45,9 +51,9 @@ class AuthController extends Controller
                         'fechaNacimiento' => 'required',
                         // Agrega aquí las validaciones necesarias para los campos específicos de personalAdmin
                     ]);
-            
-                    PersonalAdmin::create([
-                        'idAuth' => $auth->id,
+    
+                    DB::table('personal_admins')->insert([
+                        'idAuth' => $authId,
                         'nombre' => $request->nombre,
                         'apellido' => $request->apellido,
                         'cedula' => $request->cedula,
@@ -63,9 +69,9 @@ class AuthController extends Controller
                         'fechaNacimiento' => 'required',
                         // Agrega aquí las validaciones necesarias para los campos específicos de cliente
                     ]);
-            
-                    Cliente::create([
-                        'idAuth' => $auth->id,
+    
+                    DB::table('clientes')->insert([
+                        'idAuth' => $authId,
                         'nombre' => $request->nombre,
                         'apellido' => $request->apellido,
                         'cedula' => $request->cedula,
@@ -81,9 +87,9 @@ class AuthController extends Controller
                         'fechaNacimiento' => 'required',
                         // Agrega aquí las validaciones necesarias para los campos específicos de chofer
                     ]);
-            
-                    Chofer::create([
-                        'idAuth' => $auth->id,
+    
+                    DB::table('chofers')->insert([
+                        'idAuth' => $authId,
                         'nombre' => $request->nombre,
                         'apellido' => $request->apellido,
                         'cedula' => $request->cedula,
@@ -94,7 +100,10 @@ class AuthController extends Controller
                 // Añade más casos según sea necesario
             }
     
-            return response($auth, Response::HTTP_CREATED);
+            // Obtener los datos completos del registro, incluyendo las fechas y el ID
+            $authData = DB::table('auths')->where('id', $authId)->first();
+    
+            return response()->json($authData, Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -106,18 +115,22 @@ class AuthController extends Controller
                 'email_user' => ['required', 'email'],
                 'password' => ['required']
             ]);
-
+    
             // Cambia 'email_user' a 'correo' para que coincida con la columna en la base de datos
             $credentials['correo'] = $credentials['email_user'];
             unset($credentials['email_user']);
-
-            if (Auth::attempt($credentials)) {
-                $user = Auth::user();
-                $token = $user->createToken('token')->plainTextToken;
-
+    
+            $user = DB::table('auths')
+                ->where('correo', $credentials['correo'])
+                ->first();
+    
+            if ($user && Hash::check($credentials['password'], $user->password)) {
                 // Obtener datos adicionales según el tipo de usuario
                 $additionalData = $this->getUserAdditionalData($user);
-
+    
+                // Generar token
+                $token = $this->generateToken($user);
+    
                 // Response data
                 $response = [
                     "email_user" => $user->correo,
@@ -126,7 +139,7 @@ class AuthController extends Controller
                     "token" => $token,
                     "additional_data" => $additionalData,
                 ];
-
+    
                 return response($response, Response::HTTP_OK);
             } else {
                 return response(["message" => "Credenciales inválidas"], Response::HTTP_UNAUTHORIZED);
@@ -136,41 +149,43 @@ class AuthController extends Controller
             return response(["error" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    
+    private function generateToken($user)
+    {
+        $token = bin2hex(random_bytes(40));
+        
+        DB::table('auth_tokens')->insert([
+            'user_id' => $user->id,
+            'token' => $token,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    
+        return $token;
+    }
+    
     private function getUserAdditionalData($user)
     {
+        // Agrega lógica para obtener datos adicionales según el tipo de usuario
         switch ($user->idRol) {
             case 1: // Personal Admin
-                $personalAdmin = PersonalAdmin::where('idAuth', $user->id)->first();
-                return [
-                    'nombre' => $personalAdmin->nombre,
-                    'apellido' => $personalAdmin->apellido,
-                    'cedula' => $personalAdmin->cedula,
-                    'fechaNacimiento' => $personalAdmin->fechaNacimiento,
-                    // Agrega aquí otros campos específicos para el personal admin
-                ];
+                // Obtener datos adicionales de personal admin
+                $additionalData = DB::table('personal_admins')->where('idAuth', $user->id)->first();
+                break;
             case 2: // Cliente
-                $cliente = Cliente::where('idAuth', $user->id)->first();
-                return [
-                    'nombre' => $cliente->nombre,
-                    'apellido' => $cliente->apellido,
-                    'cedula' => $cliente->cedula,
-                    'fechaNacimiento' => $cliente->fechaNacimiento,
-                    // Agrega aquí otros campos específicos para el cliente
-                ];
+                // Obtener datos adicionales de cliente
+                $additionalData = DB::table('clientes')->where('idAuth', $user->id)->first();
+                break;
             case 3: // Chofer
-                $chofer = Chofer::where('idAuth', $user->id)->first();
-                return [
-                    'nombre' => $chofer->nombre,
-                    'apellido' => $chofer->apellido,
-                    'cedula' => $chofer->cedula,
-                    'fechaNacimiento' => $chofer->fechaNacimiento,
-                    // Agrega aquí otros campos específicos para el chofer
-                ];
-            // Agrega más casos según sea necesario para otros roles
+                // Obtener datos adicionales de chofer
+                $additionalData = DB::table('chofers')->where('idAuth', $user->id)->first();
+                break;
+            // Agrega más casos según sea necesario
             default:
-                return [];
+                $additionalData = null;
         }
+    
+        return $additionalData;
     }
     
     

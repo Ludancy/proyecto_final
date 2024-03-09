@@ -10,6 +10,7 @@ use App\Models\ContactoEmergenciaChofer;
 use App\Models\BancoChofer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
 
@@ -22,25 +23,44 @@ class ChoferController extends Controller
     // Agrega esta función al final de tu controlador ChoferController.php
     public function evaluacionPsicologica(Request $request)
     {
+        // Validación de datos
         $validator = Validator::make($request->all(), [
             'idChofer' => 'required|exists:chofers,id',
-            'calificacion' => 'required|numeric|min:0|max:10',
+            'calificacion' => 'required|numeric|min:0|max:100',
             // Agrega otras reglas de validación según tus necesidades
         ]);
 
-    if ($validator->fails()) {
-        return response()->json(['error' => $validator->errors()], 400);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        try {
+            // Iniciar transacción
+            DB::beginTransaction();
+
+            // Crear la evaluación psicológica directamente en la base de datos
+            $pruebaChoferId = DB::table('pruebachofer')->insertGetId([
+                'idChofer' => $request->input('idChofer'),
+                'calificacion' => $request->input('calificacion'),
+                // Agrega otros campos según tus necesidades
+            ]);
+
+            // Confirmar la transacción
+            DB::commit();
+
+            // Obtener la evaluación psicológica recién creada
+            $pruebaChofer = DB::table('pruebachofer')->find($pruebaChoferId);
+
+            return response()->json($pruebaChofer, 201);
+        } catch (\Exception $e) {
+            // Revertir la transacción en caso de error
+            DB::rollBack();
+
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
-    $pruebaChofer = PruebaChofer::create([
-        'idChofer' => $request->idChofer,
-        'calificacion' => $request->calificacion,
-        // Agrega otros campos según tus necesidades
-    ]);
- 
-    return response()->json($pruebaChofer, 201);
-    }   
-
+    // Agrega esta función al final de tu controlador ChoferController.php
     public function getEvaluacionPsicologica($id)
     {
         // Validar que el chofer exista
@@ -52,89 +72,136 @@ class ChoferController extends Controller
             return response()->json(['error' => $validator->errors()], 404);
         }
 
-        // Obtener la evaluación psicológica del chofer
-        $evaluacion = PruebaChofer::where('idChofer', $id)->orderBy('created_at', 'desc')->first();
+        try {
+            // Obtener la evaluación psicológica del chofer
+            $evaluacion = DB::table('pruebachofer')
+                ->where('idChofer', $id)
+                ->orderBy('created_at', 'desc')
+                ->first();
 
-        if (!$evaluacion) {
-            return response()->json(['message' => 'No se encontró ninguna evaluación psicológica para el chofer.'], 404);
+            if (!$evaluacion) {
+                return response()->json(['message' => 'No se encontró ninguna evaluación psicológica para el chofer.'], 404);
+            }
+
+            return response()->json($evaluacion);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        return response()->json($evaluacion);
     }
-public function getChoferes()
-{
-    $choferes = Chofer::all(); // Obtén todos los choferes desde tu modelo
+    public function getChoferes()
+    {
+        try {
+            // Obtener todos los choferes utilizando una consulta sin Eloquent ORM
+            $choferes = DB::table('chofers')->get();
 
-    return response()->json(['choferes' => $choferes], 200);
-}
-public function getInfo($id)
-{
-    try {
-        // Encuentra al chofer por su ID con las relaciones "banco" y "contactosEmergencia" cargadas
-        $chofer = Chofer::with(['cuentasBancarias', 'contactosEmergencia'])->find($id);
-
-        // Si el chofer no existe, devuelve un mensaje de error
-        if (!$chofer) {
-            return response(["message" => "Chofer no encontrado"], Response::HTTP_NOT_FOUND);
+            return response()->json(['choferes' => $choferes], 200);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
         }
-
-        // Retorna los datos del chofer con los datos del banco y los contactos de emergencia
-        return response()->json($chofer, 200);
-
-    } catch (\Exception $e) {
-        // Manejo de excepciones
-        return response(["error" => $e->getMessage()]);
     }
-}
+    // Obtener información de un chofer por ID con relaciones sin ORM
+    public function getInfo($id)
+    {
+        try {
+            // Obtener datos del chofer sin Eloquent ORM
+            $chofer = DB::table('chofers')
+                ->where('chofers.id', $id)
+                ->first();
+
+            // Si el chofer no existe, devuelve un mensaje de error
+            if (!$chofer) {
+                return response(["message" => "Chofer no encontrado"], 404);
+            }
+
+            // Obtener las cuentas bancarias utilizando una consulta sin Eloquent ORM
+            $cuentasBancarias = DB::table('banco_chofer')
+                ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
+                ->where('banco_chofer.idChofer', $id)
+                ->select('banco_chofer.*', 'bancos.nombre as entidadBancaria', 'bancos.codigo as numeroCuenta')
+                ->get();
+
+            // Obtener contactos de emergencia utilizando una consulta sin Eloquent ORM
+            $contactosEmergencia = DB::table('contacto_emergencia_chofer')
+                ->where('idChofer', $id)
+                ->get();
+
+            // Agregar las cuentas bancarias y contactos de emergencia a los datos del chofer
+            $chofer->cuentas_bancarias = $cuentasBancarias;
+            $chofer->contactos_emergencia = $contactosEmergencia;
+
+            return response()->json($chofer, 200);
+
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
+        }
+    }
 
 
 
 
-        // Actualizar un chofer por ID
-        public function update(Request $request, $id)
-        {
-            $chofer = Chofer::find($id);
-    
+    // Actualizar un chofer por ID sin usar Eloquent ORM
+    public function update(Request $request, $id)
+    {
+        try {
+            // Verificar si el chofer existe
+            $chofer = DB::table('chofers')->where('id', $id)->first();
+
             if (!$chofer) {
                 return response()->json(['message' => 'Chofer no encontrado'], 404);
             }
-    
+
             // Validaciones y lógica para actualizar el chofer
             // ...
-    
-            $chofer->update($request->all());
-    
+
+            // Actualizar el chofer sin Eloquent ORM
+            DB::table('chofers')->where('id', $id)->update($request->all());
+
             return response()->json(['message' => 'Chofer actualizado con éxito']);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
         }
+    }
     
-    // Eliminar un chofer por ID
+    // Eliminar un chofer por ID sin usar Eloquent ORM
     public function destroy($id)
     {
-        $chofer = Chofer::find($id);
+        try {
+            // Verificar si el chofer existe
+            $chofer = DB::table('chofers')->where('id', $id)->first();
 
-        if (!$chofer) {
-            return response()->json(['message' => 'Chofer no encontrado'], 404);
+            if (!$chofer) {
+                return response()->json(['message' => 'Chofer no encontrado'], 404);
+            }
+
+            // Eliminar el chofer y su registro en auths sin Eloquent ORM
+            DB::table('chofers')->where('id', $id)->delete();
+            DB::table('auths')->where('id', $chofer->idAuth)->delete();
+
+            return response()->json(['message' => 'Chofer y registro en auths eliminados con éxito']);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
         }
-        $chofer->delete();
-
-        $chofer->user()->delete();
-
-
-        return response()->json(['message' => 'Chofer y registro en auths eliminados con éxito']);
     }
+
 
     public function getTraslados($id)
     {
         try {
-            // Busca al chofer con el ID proporcionado y carga la relación 'traslados'
-            $chofer = Chofer::with('traslados')->find($id);
+            // Realizar una consulta SQL para obtener los traslados del chofer con el ID proporcionado
+            $traslados = DB::table('traslados')
+                ->where('idChofer', $id)
+                ->get();
+
+            // Verificar si el chofer existe
+            $chofer = DB::table('chofers')->where('id', $id)->first();
 
             if (!$chofer) {
-                return Response::json(['error' => 'Chofer no encontrado'], 404);
+                return response()->json(['error' => 'Chofer no encontrado'], 404);
             }
-
-            // Obtén los traslados asociados al chofer
-            $traslados = $chofer->traslados;
 
             // Puedes personalizar el formato de respuesta según tus necesidades
             $response = [
@@ -142,35 +209,73 @@ public function getInfo($id)
                 'traslados' => $traslados,
             ];
 
-            return Response::json($response, 200);
+            return response()->json($response, 200);
         } catch (\Exception $e) {
-            return Response::json(['error' => $e->getMessage()], 500);
+            // Manejo de excepciones
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
+ 
+// Obtener los vehículos de un chofer sin usar Eloquent ORM
     public function getVehiculos($id)
-{
-    try {
-        // Busca al chofer con el ID proporcionado y carga la relación 'vehiculos'
-        $chofer = Chofer::with('vehiculos')->find($id);
+    {
+        try {
+            // Realizar una consulta SQL para obtener los vehículos del chofer con el ID proporcionado
+            $vehiculos = DB::table('vehiculos')
+                ->where('idChofer', $id)
+                ->select('id', 'idChofer', 'marca', 'color', 'placa', 'anio_fabricacion', 'estado_vehiculo', 'estado_actual', 'created_at', 'updated_at')
+                ->get();
 
-        if (!$chofer) {
-            return Response::json(['error' => 'Chofer no encontrado'], 404);
+            // Verificar si el chofer existe
+            $chofer = DB::table('chofers')->where('id', $id)->first();
+
+            if (!$chofer) {
+                return response()->json(['error' => 'Chofer no encontrado'], 404);
+            }
+
+            // Puedes personalizar el formato de respuesta según tus necesidades
+            $response = [
+                'chofer' => [
+                    'id' => $chofer->id,
+                    'nombre' => $chofer->nombre,
+                    'apellido' => $chofer->apellido,
+                    'cedula' => $chofer->cedula,
+                    'fechaNacimiento' => $chofer->fechaNacimiento,
+                    'idAuth' => $chofer->idAuth,
+                    'entidadBancaria' => $chofer->entidadBancaria,
+                    'numeroCuenta' => $chofer->numeroCuenta,
+                    'saldo' => $chofer->saldo,
+                    'created_at' => $chofer->created_at,
+                    'updated_at' => $chofer->updated_at,
+                    'vehiculos' => $vehiculos,
+                ],
+            ];
+
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        // Obtén los vehículos registrados por el chofer
-        $vehiculos = $chofer->vehiculos;
-
-        // Puedes personalizar el formato de respuesta según tus necesidades
-        $response = [
-            'chofer' => $chofer        ];
-
-        return Response::json($response, 200);
-    } catch (\Exception $e) {
-        return Response::json(['error' => $e->getMessage()], 500);
     }
-}
 
+
+    public function getCuentasBancarias($idChofer)
+    {
+        try {
+            // Obtener cuentas bancarias utilizando una consulta sin Eloquent ORM
+            $cuentasBancarias = DB::table('banco_chofer')
+                ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
+                ->where('banco_chofer.idChofer', $idChofer)
+                ->select('bancos.nombre', 'bancos.codigo as nroCuenta')
+                ->get();
+
+            return response()->json($cuentasBancarias, 200);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
+        }
+    }
 
 public function obtenerResultadoEvaluacionVehiculo($idChofer, $idVehiculo)
 {
