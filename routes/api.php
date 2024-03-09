@@ -46,6 +46,7 @@ Route::get('users', [AuthController::class, 'allUsers']);
 Route::post('/agregar-banco-chofer/{idChofer}', [ChoferController::class, 'agregarBancoChofer']);
 Route::post('/agregar-contactos-chofer/{idChofer}', [ChoferController::class, 'agregarContactosChofer']);
 Route::get('choferes/{id}', [ChoferController::class, 'getInfo']);
+Route::get('choferes/{id}/cuentas-bancarias', [ChoferController::class, 'getCuentasBancarias']);
 Route::get('/choferes', [ChoferController::class, 'getChoferes']);
 Route::put('/choferes/{id}', [ChoferController::class, 'update']); // Actualizar un chofer por ID
 Route::delete('/choferes/{id}', [ChoferController::class, 'destroy']); // Eliminar un chofer por ID
