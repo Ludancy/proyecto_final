@@ -4,28 +4,34 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreateVehiculosTable extends Migration
 {
     public function up()
     {
-        Schema::create('vehiculos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('idChofer')->constrained('chofers')->onDelete('cascade');
-            $table->string('marca');
-            $table->string('color');
-            $table->string('placa')->unique();
-            $table->integer('anio_fabricacion');
-            $table->enum('estado_vehiculo', ['Pendiente', 'Aprobado'])->default('Pendiente');
-            $table->enum('estado_actual', ['activo', 'inactivo'])->default('activo');
-
-            
-            $table->timestamps();
-        });
+        // Crear la tabla de vehiculos
+        DB::statement('
+            CREATE TABLE vehiculos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                idChofer INT,
+                marca VARCHAR(255),
+                color VARCHAR(255),
+                placa VARCHAR(255) UNIQUE,
+                anio_fabricacion INT,
+                estado_vehiculo ENUM("Pendiente", "Aprobado") DEFAULT "Pendiente",
+                estado_actual ENUM("activo", "inactivo") DEFAULT "activo",
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('vehiculos');
+        // Eliminar la tabla de vehiculos
+        DB::statement('DROP TABLE IF EXISTS vehiculos');
     }
 }
 

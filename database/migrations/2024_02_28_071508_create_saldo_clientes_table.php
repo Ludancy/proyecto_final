@@ -6,24 +6,32 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\DB;
+
 class CreateSaldoClientesTable extends Migration
 {
     public function up()
     {
-        Schema::create('saldo_clientes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('idCliente')->constrained('cliente')->onDelete('cascade');
-            $table->foreignId('idBanco')->constrained('bancos')->onDelete('cascade');
-            $table->date('fecha_recarga');
-            $table->string('referencia');
-            $table->decimal('monto', 10, 2);
-            
-            $table->timestamps();
-        });
+        // Crear la tabla de SaldoClientes
+        DB::statement('
+            CREATE TABLE saldo_clientes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                idCliente INT,
+                idBanco INT,
+                fecha_recarga DATE,
+                referencia VARCHAR(255),
+                monto DECIMAL(10, 2),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (idCliente) REFERENCES cliente(id) ON DELETE CASCADE,
+                FOREIGN KEY (idBanco) REFERENCES bancos(id) ON DELETE CASCADE
+            )
+        ');
     }
 
     public function down()
     {
-        Schema::dropIfExists('saldo_clientes');
+        // Eliminar la tabla de SaldoClientes
+        DB::statement('DROP TABLE IF EXISTS saldo_clientes');
     }
 }
