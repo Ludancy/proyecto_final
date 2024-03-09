@@ -6,9 +6,9 @@ use App\Models\Chofer;
 use App\Models\PruebaChofer;
 use App\Models\Vehiculo;
 use App\Models\PruebaVehiculo;
-
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
 
@@ -29,68 +29,82 @@ class VehiculoController extends Controller
                 'anio_fabricacion' => 'required|integer',
                 'estado_vehiculo' => 'required|string',
             ]);
-
+    
             if ($validator->fails()) {
-                return Response::json(['error' => $validator->errors()], 400);
+                return response()->json(['error' => $validator->errors()], 400);
             }
-
+    
             // Crear un nuevo vehículo
-            $vehiculo = Vehiculo::create([
+            $vehiculoId = DB::table('vehiculos')->insertGetId([
                 'idChofer' => $request->idChofer,
                 'marca' => $request->marca,
                 'color' => $request->color,
                 'placa' => $request->placa,
                 'anio_fabricacion' => $request->anio_fabricacion,
                 'estado_vehiculo' => $request->estado_vehiculo,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-
-            return Response::json(['message' => 'Vehículo registrado correctamente', 'vehiculo' => $vehiculo], 201);
+    
+            $vehiculo = DB::table('vehiculos')->find($vehiculoId);
+    
+            return response()->json(['message' => 'Vehículo registrado correctamente', 'vehiculo' => $vehiculo], 201);
         } catch (\Exception $e) {
-            return Response::json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function updateInfo(Request $request, $id)
     {
-        $vehiculo = Vehiculo::find($id);
-
-        if (!$vehiculo) {
-            return response()->json(['message' => 'No se encontró el vehículo.'], 404);
+        try {
+            // Buscar el vehículo por ID
+            $vehiculo = DB::table('vehiculos')->find($id);
+    
+            if (!$vehiculo) {
+                return response()->json(['message' => 'No se encontró el vehículo.'], 404);
+            }
+    
+            // Realizar validaciones y actualizaciones según tus necesidades
+            DB::table('vehiculos')->where('id', $id)->update([
+                'idChofer' => $request->idChofer,
+                'marca' => $request->marca,
+                'color' => $request->color,
+                'placa' => $request->placa,
+                'anio_fabricacion' => $request->anio_fabricacion,
+                'estado_vehiculo' => $request->estado_vehiculo,
+                // ... Otras actualizaciones según tus necesidades
+                'updated_at' => now(),
+            ]);
+    
+            return response()->json(['message' => 'Información del vehículo actualizada con éxito']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        // Realizar validaciones y actualizaciones según tus necesidades
-        $vehiculo->update([
-            'idChofer' => $request->idChofer,
-            'marca' => $request->marca,
-            'color' => $request->color,
-            'placa' => $request->placa,
-            'anio_fabricacion' => $request->anio_fabricacion,
-            'estado_vehiculo' => $request->estado_vehiculo,
-            // ... Otras actualizaciones según tus necesidades
-        ]);
-
-        return response()->json(['message' => 'Información del vehículo actualizada con éxito']);
     }
-
-    // Eliminar un vehículo
     public function delete($id)
     {
-        $vehiculo = Vehiculo::find($id);
-
-        if (!$vehiculo) {
-            return response()->json(['message' => 'No se encontró el vehículo.'], 404);
+        try {
+            // Verificar si el vehículo existe
+            $vehiculo = DB::table('vehiculos')->find($id);
+    
+            if (!$vehiculo) {
+                return response()->json(['message' => 'No se encontró el vehículo.'], 404);
+            }
+    
+            // Realizar acciones previas a la eliminación si es necesario
+            // ...
+    
+            // Eliminar el vehículo
+            DB::table('vehiculos')->where('id', $id)->delete();
+    
+            return response()->json(['message' => 'Vehículo eliminado con éxito']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        // Realizar acciones previas a la eliminación si es necesario
-        // ...
-
-        $vehiculo->delete();
-
-        return response()->json(['message' => 'Vehículo eliminado con éxito']);
     }
 
 
-// Agrega esta función al final de tu controlador ChoferController.php
+
 public function evaluacionVehiculo(Request $request)
 {
     $validator = Validator::make($request->all(), [
@@ -104,39 +118,43 @@ public function evaluacionVehiculo(Request $request)
     }
 
     try {
-        $pruebaVehiculo = PruebaVehiculo::create([
+        // Registrar la prueba del vehículo
+        $pruebaVehiculoId = DB::table('pruebavehiculo')->insertGetId([
             'idVehiculo' => $request->idVehiculo,
             'calificacion' => $request->calificacion,
             // Agrega otros campos según tus necesidades
+            'fecha_creacion' => now(),
         ]);
 
-        // Obtener el vehículo
-        $vehiculo = Vehiculo::find($request->idVehiculo);
+        // Obtener la información del vehículo
+        $vehiculo = DB::table('vehiculos')->find($request->idVehiculo);
 
         // Actualizar el estado del vehículo a 'Aprobado' si la calificación es mayor que 65
         if ($request->calificacion > 65) {
-            $vehiculo->estado_vehiculo = 'Aprobado';
-            $vehiculo->save();
+            DB::table('vehiculos')->where('id', $request->idVehiculo)->update(['estado_vehiculo' => 'Aprobado']);
         }
 
-        return response()->json(['message' => 'Evaluación de vehículo registrada con éxito'], 201);
+        return response()->json(['message' => 'Evaluación de vehículo registrada con éxito'], 200);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
 
 
-    // Obtener la lista de vehículos aprobados
     public function obtenerVehiculosAprobados()
     {
         // Filtrar los vehículos por estado "Activo" y con alguna prueba aprobada (calificación >= 65)
-        $vehiculosAprobados = Vehiculo::where('estado_vehiculo', 'Aprobado')
-            ->whereHas('pruebasVehiculo', function ($query) {
-                $query->where('calificacion', '>=', 65);
+        $vehiculosAprobados = DB::table('vehiculos')
+            ->where('estado_vehiculo', 'Aprobado')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('pruebavehiculo')
+                    ->whereRaw('pruebavehiculo.idVehiculo = vehiculos.id')
+                    ->where('calificacion', '>=', 65);
             })
             ->get();
 
-        if ($vehiculosAprobados->isEmpty()) {
+        if (empty($vehiculosAprobados)) {
             return response()->json(['message' => 'No se encontraron vehículos aprobados.'], 404);
         }
 
@@ -146,24 +164,30 @@ public function evaluacionVehiculo(Request $request)
     public function obtenerVehiculosPendientesRevision()
     {
         // Filtrar los vehículos por estado "Pendiente de revisión"
-        $vehiculosPendientesRevision = Vehiculo::where('estado_vehiculo', 'Pendiente')->get();
-
-        if ($vehiculosPendientesRevision->isEmpty()) {
+        $vehiculosPendientesRevision = DB::table('vehiculos')
+            ->where('estado_vehiculo', 'Pendiente')
+            ->get();
+    
+        if (empty($vehiculosPendientesRevision)) {
             return response()->json(['message' => 'No se encontraron vehículos pendientes de revisión.'], 404);
         }
-
+    
         return response()->json($vehiculosPendientesRevision);
     }
 
     public function getInfo($id)
     {
         // Buscar el vehículo por ID junto con las pruebas de vehículo relacionadas
-        $vehiculo = Vehiculo::with('pruebasVehiculo')->find($id);
-
+        $vehiculo = DB::table('vehiculos')
+            ->leftJoin('pruebavehiculo', 'vehiculos.id', '=', 'pruebavehiculo.idVehiculo')
+            ->select('vehiculos.*', 'pruebavehiculo.calificacion')
+            ->where('vehiculos.id', $id)
+            ->first();
+    
         if (!$vehiculo) {
             return response()->json(['message' => 'No se encontró el vehículo.'], 404);
         }
-
+    
         return response()->json($vehiculo);
     }
 

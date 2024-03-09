@@ -32,7 +32,6 @@ Route::post('register', [AuthController::class, 'register']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('user-profile', [AuthController::class, 'userProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
-    Route::get('/traslados', [ClienteController::class, 'obtenerTrasladosCliente']);
 
 });
 
@@ -61,6 +60,7 @@ Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados'])
     Route::post('/traslados-realizados-chofer/{choferId}', [ChoferController::class, 'revisarTrasladosRealizados']);
      // Listado de Traslados Cancelados
      Route::get('chofer/cancelados/{choferId}', [ChoferController::class, 'trasladosCanceladosChofer']);
+     Route::get('/traslados', [ClienteController::class, 'obtenerTrasladosCliente']);
 
      // Listado de Traslados Pendientes por Cancelar
      Route::get('chofer/pendientes/{choferId}', [ChoferController::class, 'trasladosPendientesCancelarChofer']);
