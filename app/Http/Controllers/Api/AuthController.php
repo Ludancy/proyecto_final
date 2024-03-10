@@ -127,7 +127,9 @@ class AuthController extends Controller
             if ($user && Hash::check($credentials['password'], $user->password)) {
                 // Obtener datos adicionales según el tipo de usuario
                 $additionalData = $this->getUserAdditionalData($user);
-    
+                $nombreRol = DB::table('roles')
+                ->where('id', $user->idRol)
+                ->value('nombre');
                 // Generar token
                 $token = $this->generateToken($user);
     
@@ -136,6 +138,7 @@ class AuthController extends Controller
                     "email_user" => $user->correo,
                     "distid" => "RRA555", // Reemplaza con datos reales
                     "role" => $user->idRol,
+                    "role_nombre" => $nombreRol,
                     "token" => $token,
                     "additional_data" => $additionalData,
                 ];

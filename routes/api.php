@@ -91,6 +91,7 @@ Route::get('/traslado/cliente/{clienteId}', [ClienteController::class, 'obtenerD
 
 Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'solicitarTraslado']);
 Route::get('cliente/traslados/{clienteId}', [ClienteController::class, 'trasladosCliente']);
+Route::get('/traslados/{trasladoId}', [ClienteController::class, 'obtenerTrasladoPorId']);
 Route::get('/historial-recargas', [ClienteController::class, 'historialRecargasCliente']);
 Route::get('/historial-recargas/{clienteId}', [ClienteController::class, 'historialRecargasCliente']);
 

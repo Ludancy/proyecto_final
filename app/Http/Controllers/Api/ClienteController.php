@@ -146,7 +146,7 @@ class ClienteController extends Controller
             DB::table('cliente')->where('id', $idCliente)->decrement('saldo', $costoTraslado);
             DB::table('chofers')->where('id', $choferAleatorio->id)->increment('saldo', $costoTraslado * 0.7); // 70% para el chofer
     
-            return response()->json(['message' => 'Traslado solicitado con éxito.'], 201);
+            return response()->json(['message' => 'Traslado solicitado con éxito.','trasladoId'=>$traslado], 201);
     
         } catch (\Exception $e) {
             // Manejo de excepciones
@@ -248,6 +248,29 @@ class ClienteController extends Controller
     }
 
 
+    public function obtenerTrasladoPorId($trasladoId)
+    {
+        try {
+            // Buscar el traslado del cliente por ID
+            $traslado = DB::table('traslados')
+                ->select('traslados.*', 'chofers.*', 'vehiculos.*')
+                ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
+                ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
+                ->where('traslados.id', $trasladoId)
+                ->first();
+
+            if (!$traslado) {
+                return response(["message" => "No se encontró el traslado con ID $trasladoId para este cliente"], 404);
+            }
+
+            // Devolver los datos del traslado, chofer y vehículo asociado
+            return response()->json($traslado, 200);
+
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
+        }
+    }
     public function historialRecargasCliente(Request $request, $clienteId)
     {
         try {
