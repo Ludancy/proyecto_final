@@ -88,7 +88,7 @@ class AdminController extends Controller
         try {
             // Obtener las ganancias sumando el 30% del costo de cada traslado
             $ganancias = DB::table('traslados')
-                ->whereBetween('created_at', [$request->fechaInicio, $request->fechaFin])
+                ->whereBetween('fecha_creacion', [$request->fechaInicio, $request->fechaFin])
                 ->sum(DB::raw('costo * 0.3'));
     
             return response()->json(['ganancias' => $ganancias]);

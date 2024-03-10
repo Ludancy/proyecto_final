@@ -138,8 +138,7 @@ class ClienteController extends Controller
                 'estado' => 'Pendiente',
                 'idChofer' => $choferAleatorio->id,
                 'idVehiculo' => $vehiculoChofer->id,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'fecha_creacion' => now(),
             ]);
     
     
@@ -188,9 +187,7 @@ class ClienteController extends Controller
                 'referencia' => $request->referencia,
                 'monto' => $request->monto,
                 'idBanco' => $banco->id,
-                'idCliente' => $cliente->id,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'idCliente' => $cliente->id
             ]);
 
             // Actualizar el saldo del cliente
@@ -221,7 +218,7 @@ class ClienteController extends Controller
                 SELECT * 
                 FROM traslados 
                 WHERE idCliente = :cliente_id 
-                ORDER BY created_at DESC
+                ORDER BY fecha_creacion DESC
             ', ['cliente_id' => $cliente->id]);
     
             // Puedes personalizar la respuesta según tus necesidades
@@ -240,7 +237,7 @@ class ClienteController extends Controller
                 SELECT * 
                 FROM traslados 
                 WHERE idCliente = :cliente_id 
-                ORDER BY created_at DESC
+                ORDER BY fecha_creacion DESC
             ', ['cliente_id' => $clienteId]);
     
             // Puedes personalizar la respuesta según tus necesidades

@@ -56,6 +56,7 @@ Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados'])
     Route::post('/pruebas/evaluacion-psicologica', [ChoferController::class, 'evaluacionPsicologica']);
     Route::get('/choferes/{id}/evaluacion-psicologica', [ChoferController::class, 'getEvaluacionPsicologica']);
     Route::get('choferes/{id}/vehiculos', [ChoferController::class, 'getVehiculos']);
+    Route::get('vehiculos/chofer/{id}', [ChoferController::class, 'getVehiculosdeChofer']);
     Route::get('/choferes/{idChofer}/{idVehiculo}/evaluacion-vehiculo', [ChoferController::class, 'obtenerResultadoEvaluacionVehiculo']);
     Route::post('/traslados-realizados-chofer/{choferId}', [ChoferController::class, 'revisarTrasladosRealizados']);
      // Listado de Traslados Cancelados

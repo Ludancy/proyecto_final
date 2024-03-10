@@ -21,8 +21,7 @@ class CreateVehiculosTable extends Migration
                 anio_fabricacion INT,
                 estado_vehiculo ENUM("Pendiente", "Aprobado") DEFAULT "Pendiente",
                 estado_actual ENUM("activo", "inactivo") DEFAULT "activo",
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
                 FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE
             )
         ');

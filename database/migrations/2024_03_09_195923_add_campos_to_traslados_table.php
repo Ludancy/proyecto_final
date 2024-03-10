@@ -12,6 +12,8 @@ class AddCamposToTrasladosTable extends Migration
             $table->date('fecha_pago')->nullable(); // Puedes ajustar la definición según tus necesidades
             $table->string('referencia')->nullable(); // Añade la columna referencia
             $table->decimal('monto_pagado', 10, 2)->nullable(); // Añade la columna monto_pagado
+            $table->date('fecha_creacion')->nullable(); // Puedes ajustar la definición según tus necesidades
+
         });
     }
 
@@ -19,6 +21,7 @@ class AddCamposToTrasladosTable extends Migration
     {
         Schema::table('traslados', function (Blueprint $table) {
             $table->dropColumn('fecha_pago');
+            $table->dropColumn('fecha_creacion');
             $table->dropColumn('referencia');
             $table->dropColumn('monto_pagado');
         });

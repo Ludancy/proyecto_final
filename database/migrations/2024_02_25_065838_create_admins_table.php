@@ -19,8 +19,7 @@ class CreateAdminsTable extends Migration
                 cedula VARCHAR(255) NULL,
                 fechaNacimiento DATE NULL,
                 idAuth INT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
                 FOREIGN KEY (idAuth) REFERENCES auths(id) ON DELETE CASCADE
             )
         ');
