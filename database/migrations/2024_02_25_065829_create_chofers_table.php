@@ -22,8 +22,6 @@ class CreateChofersTable extends Migration
                 entidadBancaria VARCHAR(255) NULL,
                 numeroCuenta VARCHAR(255) NULL,
                 saldo DECIMAL(10, 2) DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (idAuth) REFERENCES auths(id) ON DELETE CASCADE
             )
         ');

@@ -23,8 +23,7 @@ class CreateTrasladosTable extends Migration
                 costo DECIMAL(10, 2),
                 estado ENUM("pendiente", "realizado", "cancelado") DEFAULT "pendiente",
                 idVehiculo INT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
                 FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE,
                 FOREIGN KEY (idCliente) REFERENCES cliente(id) ON DELETE CASCADE,
                 FOREIGN KEY (origen) REFERENCES lugares(id) ON DELETE CASCADE,

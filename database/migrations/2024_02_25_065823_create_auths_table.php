@@ -21,8 +21,6 @@ class CreateAuthsTable extends Migration
                 password VARCHAR(255),
                 fechaCreacion TIMESTAMP NULL,
                 estado VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (idRol) REFERENCES roles(id)
             )
         ');

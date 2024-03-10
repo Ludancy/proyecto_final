@@ -42,6 +42,7 @@ class ChoferController extends Controller
             $pruebaChoferId = DB::table('pruebachofer')->insertGetId([
                 'idChofer' => $request->input('idChofer'),
                 'calificacion' => $request->input('calificacion'),
+                'fecha_creacion' => now(),
                 // Agrega otros campos según tus necesidades
             ]);
 
@@ -76,7 +77,7 @@ class ChoferController extends Controller
             // Obtener la evaluación psicológica del chofer
             $evaluacion = DB::table('pruebachofer')
                 ->where('idChofer', $id)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('fecha_creacion', 'desc')
                 ->first();
 
             if (!$evaluacion) {
@@ -94,7 +95,7 @@ class ChoferController extends Controller
     {
         try {
             $evaluaciones = DB::table('pruebachofer')
-                ->orderBy('created_at', 'desc')
+                ->orderBy('fecha_creacion', 'desc')
                 ->get();
 
             if ($evaluaciones->isEmpty()) {
@@ -286,7 +287,7 @@ class ChoferController extends Controller
             // Realizar una consulta SQL para obtener los vehículos del chofer con el ID proporcionado
             $vehiculos = DB::table('vehiculos')
                 ->where('idChofer', $id)
-                ->select('id', 'idChofer', 'marca', 'color', 'placa', 'anio_fabricacion', 'estado_vehiculo', 'estado_actual', 'created_at', 'updated_at')
+                ->select('id', 'idChofer', 'marca', 'color', 'placa', 'anio_fabricacion', 'estado_vehiculo', 'estado_actual')
                 ->get();
 
             // Verificar si el chofer existe
@@ -308,8 +309,6 @@ class ChoferController extends Controller
                     'entidadBancaria' => $chofer->entidadBancaria,
                     'numeroCuenta' => $chofer->numeroCuenta,
                     'saldo' => $chofer->saldo,
-                    'created_at' => $chofer->created_at,
-                    'updated_at' => $chofer->updated_at,
                     'vehiculos' => $vehiculos,
                 ],
             ];
@@ -321,6 +320,29 @@ class ChoferController extends Controller
         }
     }
 
+
+    public function getVehiculosdeChofer($id)
+    {
+        try {
+            // Realizar una consulta SQL para obtener los vehículos del chofer con el ID proporcionado
+            $vehiculos = DB::table('vehiculos')
+                ->where('idChofer', $id)
+                ->select('id', 'marca', 'color', 'placa', 'anio_fabricacion', 'estado_vehiculo', 'estado_actual')
+                ->get();
+
+            // Verificar si el chofer existe
+            $chofer = DB::table('chofers')->where('id', $id)->first();
+
+            if (!$chofer) {
+                return response()->json(['error' => 'Chofer no encontrado'], 404);
+            }
+
+            return response()->json($vehiculos, 200);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
     public function getCuentasBancarias($idChofer)
     {
@@ -396,8 +418,7 @@ class ChoferController extends Controller
                     'costo',
                     'estado',
                     'idVehiculo',
-                    'traslados.created_at',
-                    'traslados.updated_at',
+                    'traslados.fecha_creacion',
                     'origen',
                     'destino',
                     'lugares.nombre as origennombre',
@@ -406,8 +427,8 @@ class ChoferController extends Controller
                 ->leftJoin('lugares', 'traslados.origen', '=', 'lugares.id')
                 ->leftJoin('lugares as destinos', 'traslados.destino', '=', 'destinos.id')
                 ->where('idChofer', $chofer->id)
-                ->whereBetween('traslados.created_at', [$request->fecha_inicio, $request->fecha_fin])
-                ->orderBy('traslados.created_at', 'desc')
+                ->whereBetween('traslados.fecha_creacion', [$request->fecha_inicio, $request->fecha_fin])
+                ->orderBy('traslados.fecha_creacion', 'desc')
                 ->get();
     
             return response()->json(['traslados_realizados' => $traslados]);
@@ -478,9 +499,6 @@ class ChoferController extends Controller
                         'idChofer' => $idChofer,
                         'nombre' => $contacto['nombre'],
                         'telefono' => $contacto['telefono'],
-                        // Puedes agregar más campos según tus necesidades
-                        'created_at' => now(),
-                        'updated_at' => now(),
                     ]);
                 }
     
@@ -525,9 +543,7 @@ class ChoferController extends Controller
                 'idChofer' => $idChofer,
                 'idBanco' => $request->idBanco,
                 'nroCuenta' => $request->nroCuenta,
-                'estado' => $request->estado,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'estado' => $request->estado
             ]);
     
             return response()->json(['message' => 'Datos bancarios del chofer agregados con éxito.']);

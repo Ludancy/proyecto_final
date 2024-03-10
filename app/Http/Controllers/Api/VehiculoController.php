@@ -41,9 +41,7 @@ class VehiculoController extends Controller
                 'color' => $request->color,
                 'placa' => $request->placa,
                 'anio_fabricacion' => $request->anio_fabricacion,
-                'estado_vehiculo' => $request->estado_vehiculo,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'estado_vehiculo' => $request->estado_vehiculo
             ]);
     
             $vehiculo = DB::table('vehiculos')->find($vehiculoId);

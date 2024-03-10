@@ -17,8 +17,6 @@ class CreatePruebaChofersTable extends Migration
                 idChofer INT,
                 calificacion INT,
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE
             )
         ');

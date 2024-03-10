@@ -20,8 +20,7 @@ class CreateClientesTable extends Migration
                 fechaNacimiento DATE NOT NULL,
                 idAuth INT,
                 saldo DECIMAL(10, 2) DEFAULT 0.00,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
                 FOREIGN KEY (idAuth) REFERENCES auths(id) ON DELETE CASCADE
             )
         ');
