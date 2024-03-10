@@ -181,7 +181,7 @@ class ChoferController extends Controller
                 ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
                 ->where('banco_chofer.idChofer', $id)
                 ->where('banco_chofer.estado', 'activo') // Condición adicional para cuentas activas
-                ->select('banco_chofer.*', 'bancos.nombre as entidadBancaria', 'bancos.codigo as numeroCuenta')
+                ->select('banco_chofer.*', 'bancos.nombre as entidadBancaria', 'bancos.codigo as bancoCodigo')
                 ->first();
     
             // Obtener todas las cuentas bancarias del chofer
@@ -210,7 +210,7 @@ class ChoferController extends Controller
                 "nroCuenta" => $cuentaBancariaActiva ? $cuentaBancariaActiva->nroCuenta : null,
                 "bancoNombre" => $cuentaBancariaActiva ? $cuentaBancariaActiva->entidadBancaria : null,
                 "estado" => $cuentaBancariaActiva ? $cuentaBancariaActiva->estado : null,
-                "numeroCuenta" => $cuentaBancariaActiva ? $cuentaBancariaActiva->numeroCuenta : null,
+                "bancoCodigo" => $cuentaBancariaActiva ? $cuentaBancariaActiva->bancoCodigo : null,
                 "cuentas_bancarias" => $cuentasBancarias,
                 "contactosEmergencia" => $contactosEmergencia,
             ];
