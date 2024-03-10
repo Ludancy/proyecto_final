@@ -163,7 +163,6 @@ class ChoferController extends Controller
             return response(["error" => $e->getMessage()], 500);
         }
     }
-    // Obtener información de un chofer por ID con relaciones sin ORM
     public function getInfo($id)
     {
         try {
@@ -171,36 +170,194 @@ class ChoferController extends Controller
             $chofer = DB::table('chofers')
                 ->where('chofers.id', $id)
                 ->first();
-
+    
             // Si el chofer no existe, devuelve un mensaje de error
             if (!$chofer) {
                 return response(["message" => "Chofer no encontrado"], 404);
             }
-
-            // Obtener las cuentas bancarias utilizando una consulta sin Eloquent ORM
+    
+            // Obtener la cuenta bancaria activa del chofer utilizando una consulta sin Eloquent ORM
+            $cuentaBancariaActiva = DB::table('banco_chofer')
+                ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
+                ->where('banco_chofer.idChofer', $id)
+                ->where('banco_chofer.estado', 'activo') // Condición adicional para cuentas activas
+                ->select('banco_chofer.*', 'bancos.nombre as entidadBancaria', 'bancos.codigo as numeroCuenta')
+                ->first();
+    
+            // Obtener todas las cuentas bancarias del chofer
             $cuentasBancarias = DB::table('banco_chofer')
                 ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
                 ->where('banco_chofer.idChofer', $id)
                 ->select('banco_chofer.*', 'bancos.nombre as entidadBancaria', 'bancos.codigo as numeroCuenta')
                 ->get();
-
+    
             // Obtener contactos de emergencia utilizando una consulta sin Eloquent ORM
             $contactosEmergencia = DB::table('contacto_emergencia_chofer')
                 ->where('idChofer', $id)
                 ->get();
-
-            // Agregar las cuentas bancarias y contactos de emergencia a los datos del chofer
-            $chofer->cuentas_bancarias = $cuentasBancarias;
-            $chofer->contactos_emergencia = $contactosEmergencia;
-
-            return response()->json($chofer, 200);
-
+    
+            // Estructurar los datos de respuesta
+            $respuesta = [
+                "id" => $chofer->id,
+                "nombre" => $chofer->nombre,
+                "apellido" => $chofer->apellido,
+                "cedula" => $chofer->cedula,
+                "fechaNacimiento" => $chofer->fechaNacimiento,
+                "idAuth" => $chofer->idAuth,
+                "saldo" => "0.00",
+                "idChofer" => $cuentaBancariaActiva ? $cuentaBancariaActiva->idChofer : null,
+                "idBanco" => $cuentaBancariaActiva ? $cuentaBancariaActiva->idBanco : null,
+                "nroCuenta" => $cuentaBancariaActiva ? $cuentaBancariaActiva->nroCuenta : null,
+                "bancoNombre" => $cuentaBancariaActiva ? $cuentaBancariaActiva->entidadBancaria : null,
+                "estado" => $cuentaBancariaActiva ? $cuentaBancariaActiva->estado : null,
+                "numeroCuenta" => $cuentaBancariaActiva ? $cuentaBancariaActiva->numeroCuenta : null,
+                "cuentas_bancarias" => $cuentasBancarias,
+                "contactosEmergencia" => $contactosEmergencia,
+            ];
+    
+            return response()->json($respuesta, 200);
+    
         } catch (\Exception $e) {
             // Manejo de excepciones
             return response(["error" => $e->getMessage()], 500);
         }
     }
 
+    
+
+    public function getContactosEmergenciaById($idContactoEmergencia)
+    {
+        try {
+            // Obtener un solo contacto de emergencia por su ID sin Eloquent ORM
+            $contactoEmergencia = DB::table('contacto_emergencia_chofer')
+                ->where('id', $idContactoEmergencia)
+                ->first();
+    
+            // Si no se encuentra el contacto de emergencia, devuelve un mensaje de error
+            if (!$contactoEmergencia) {
+                return response(["message" => "No se encontró el contacto de emergencia con ID $idContactoEmergencia"], 404);
+            }
+    
+            return response()->json($contactoEmergencia, 200);
+    
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
+        }
+    } 
+
+    public function getContactosEmergenciaByChoferId($id)
+    {
+        try {
+            // Obtener contactos de emergencia utilizando una consulta sin Eloquent ORM
+            $contactosEmergencia = DB::table('contacto_emergencia_chofer')
+                ->where('idChofer', $id)
+                ->get();
+    
+            // Si no se encuentran contactos de emergencia, devuelve un mensaje de error
+            if ($contactosEmergencia->isEmpty()) {
+                return response(["message" => "No se encontraron contactos de emergencia para el chofer con ID $id"], 404);
+            }
+    
+            return response()->json($contactosEmergencia, 200);
+    
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
+        }
+    }
+
+    public function actualizarContactoEmergencia(Request $request, $idContactoEmergencia)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'nombre' => 'required|string',
+                'telefono' => 'required|string',
+            ]);
+    
+            if ($validator->fails()) {
+                return response(['error' => $validator->errors()], 400);
+            }
+    
+            DB::table('contacto_emergencia_chofer')
+                ->where('id', $idContactoEmergencia)
+                ->update([
+                    'nombre' => $request->nombre,
+                    'telefono' => $request->telefono,
+                ]);
+    
+            return response(['message' => 'Contacto de emergencia actualizado con éxito'], 200);
+    
+        } catch (\Exception $e) {
+            return response(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function eliminarContactoEmergencia($idContactoEmergencia)
+    {
+        try {
+            DB::table('contacto_emergencia_chofer')->where('id', $idContactoEmergencia)->delete();
+    
+            return response(['message' => 'Contacto de emergencia eliminado con éxito'], 200);
+    
+        } catch (\Exception $e) {
+            return response(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+    public function crearContactoEmergencia(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'choferId' => 'required|integer', // Asegúrate de que 'choferId' sea un entero
+                'nombre' => 'required|string',
+                'telefono' => 'required|string',
+            ]);
+    
+            if ($validator->fails()) {
+                return response(['error' => $validator->errors()], 400);
+            }
+    
+            $nuevoContactoEmergencia = [
+                'idChofer' => $request->choferId,
+                'nombre' => $request->nombre,
+                'telefono' => $request->telefono,
+            ];
+    
+            $idContactoEmergencia = DB::table('contacto_emergencia_chofer')->insertGetId($nuevoContactoEmergencia);
+    
+            return response(['message' => 'Contacto de emergencia creado con éxito', 'idContactoEmergencia' => $idContactoEmergencia], 201);
+    
+        } catch (\Exception $e) {
+            return response(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getBancoByChoferId($id)
+    {
+        try {
+            // Obtener una cuenta bancaria activa del chofer utilizando una consulta sin Eloquent ORM
+            $cuentaBancaria = DB::table('banco_chofer')
+                ->join('bancos', 'banco_chofer.idBanco', '=', 'bancos.id')
+                ->where('banco_chofer.idChofer', $id)
+                ->where('banco_chofer.estado', 'activo') // Condición adicional para cuentas activas
+                ->select('banco_chofer.*', 'bancos.nombre as entidadBancaria', 'bancos.codigo as numeroCuenta')
+                ->first();
+    
+            // Si no se encuentra una cuenta bancaria activa, devuelve un mensaje de error
+            if (!$cuentaBancaria) {
+                return response(["message" => "No se encontró una cuenta bancaria activa para el chofer con ID $id"], 404);
+            }
+    
+            return response()->json($cuentaBancaria, 200);
+    
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], 500);
+        }
+    }
 
 
 

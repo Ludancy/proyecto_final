@@ -50,6 +50,12 @@ Route::get('/choferes', [ChoferController::class, 'getChoferes']);
 Route::put('/choferes/{id}', [ChoferController::class, 'update']); // Actualizar un chofer por ID
 Route::delete('/choferes/{id}', [ChoferController::class, 'destroy']); // Eliminar un chofer por ID
 Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados']);
+Route::get('/chofer/{id}/banco', [ChoferController::class, 'getBancoByChoferId']);
+Route::get('/contactos-emergencia/{idContactoEmergencia}', [ChoferController::class, 'getContactosEmergenciaById']);
+Route::get('/choferes/{id}/contactos-emergencia', [ChoferController::class, 'getContactosEmergenciaByChoferId']);
+Route::put('/contactos-emergencia/{idContactoEmergencia}', [ChoferController::class, 'actualizarContactoEmergencia']);
+Route::delete('/contactos-emergencia/{idContactoEmergencia}', [ChoferController::class, 'eliminarContactoEmergencia']);
+Route::post('/choferes/contactos-emergencia', [ChoferController::class, 'crearContactoEmergencia']);
 
     Route::post('prueba-chofer', [ChoferController::class, 'storeCalificacion']);
     // Referencia textual: "...ingresan la puntuación a las pruebas tanto de los choferes..."
