@@ -254,10 +254,7 @@ class ChoferController extends Controller
                 ->where('idChofer', $id)
                 ->get();
     
-            // Si no se encuentran contactos de emergencia, devuelve un mensaje de error
-            if ($contactosEmergencia->isEmpty()) {
-                return response(["message" => "No se encontraron contactos de emergencia para el chofer con ID $id"], 404);
-            }
+  
     
             return response()->json($contactosEmergencia, 200);
     
