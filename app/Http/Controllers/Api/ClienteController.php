@@ -252,12 +252,19 @@ class ClienteController extends Controller
     {
         try {
             // Buscar el traslado del cliente por ID
-            $traslado = DB::table('traslados')
-                ->select('traslados.*', 'chofers.*', 'vehiculos.*')
-                ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
-                ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
-                ->where('traslados.id', $trasladoId)
-                ->first();
+            $traslados = DB::table('traslados')
+            ->select(
+                'traslados.id as trasladoId',
+                'traslados.*', // Puedes mantener el resto de los campos de traslados
+                'chofers.id as choferId',
+                'chofers.*', // Puedes mantener el resto de los campos de chofer
+                'vehiculos.id as vehiculoId',
+                'vehiculos.*' // Puedes mantener el resto de los campos de vehiculo
+            )
+            ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
+            ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
+            ->orderBy('traslados.fecha_creacion', 'DESC')
+            ->get();
 
             if (!$traslado) {
                 return response(["message" => "No se encontró el traslado con ID $trasladoId para este cliente"], 404);
@@ -271,6 +278,49 @@ class ClienteController extends Controller
             return response(["error" => $e->getMessage()], 500);
         }
     }
+
+    public function obtenerTodosLosTraslados()
+    {
+        try {
+            $traslados = DB::table('traslados')
+            ->select(
+                'traslados.id as trasladoId',
+                'traslados.*', // Puedes mantener el resto de los campos de traslados
+                'chofers.id as choferId',
+                'chofers.*', // Puedes mantener el resto de los campos de chofer
+                'vehiculos.id as vehiculoId',
+                'vehiculos.*' // Puedes mantener el resto de los campos de vehiculo
+            )
+            ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
+            ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
+            ->orderBy('traslados.fecha_creacion', 'DESC')
+            ->get();
+    
+            if ($traslados->isEmpty()) {
+                return response(["message" => "No se encontraron traslados"], 404);
+            }
+    
+            return response()->json($traslados, 200);
+    
+        } catch (\Exception $e) {
+            return response(["error" => $e->getMessage()], 500);
+        }
+    }
+
+    public function eliminarTraslado($trasladoId)
+{
+    try {
+        // Eliminar el traslado
+        DB::table('traslados')->where('id', $trasladoId)->delete();
+
+        // ... (realizar otras acciones si es necesario)
+
+        return response()->json(['message' => 'Traslado eliminado con éxito.'], 200);
+
+    } catch (\Exception $e) {
+        return response(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
     public function historialRecargasCliente(Request $request, $clienteId)
     {
         try {

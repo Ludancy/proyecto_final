@@ -86,7 +86,8 @@ Route::prefix('clientes')->group(function () {
     Route::put('/{id}', [ClienteController::class, 'update']); // Actualizar un cliente por ID
     Route::delete('/{id}', [ClienteController::class, 'destroy']); // Eliminar un cliente por ID
 });
-
+Route::get('/traslados', [ClienteController::class, 'obtenerTodosLosTraslados']);
+Route::delete('/traslados/{trasladoId}', [ClienteController::class, 'eliminarTraslado']);
 Route::get('/traslado/cliente/{clienteId}', [ClienteController::class, 'obtenerDatosTrasladoCliente']);
 
 Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'solicitarTraslado']);
