@@ -19,8 +19,7 @@ class CreateBancoChoferTable extends Migration
                 idBanco INT,
                 nroCuenta VARCHAR(255),
                 estado VARCHAR(255) NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
                 FOREIGN KEY (idChofer) REFERENCES chofers(id) ON DELETE CASCADE,
                 FOREIGN KEY (idBanco) REFERENCES bancos(id) ON DELETE CASCADE
             )

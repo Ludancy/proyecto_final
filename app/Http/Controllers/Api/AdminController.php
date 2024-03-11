@@ -77,21 +77,75 @@ class AdminController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function trasladosPorFecha(Request $request)
+    {
+        try {
+            // Validar datos de la solicitud
+            $request->validate([
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            ]);
+    
+            // Obtener los traslados realizados en un período de tiempo
+            $traslados = DB::table('traslados')
+                ->select(
+                    'traslados.id',
+                    'idChofer',
+                    'chofers.nombre as nombre_chofer', // Agregado
+                    'idCliente',
+                    'cliente.nombre as nombre_cliente', // Agregado
+                    'costo',
+                    'estado',
+                    'idVehiculo',
+                    'traslados.fecha_creacion',
+                    'origen',
+                    'destino',
+                    'lugares.nombre as nombre_origen',
+                    'destinos.nombre as nombre_destino'
+                )
+                ->leftJoin('lugares', 'traslados.origen', '=', 'lugares.id')
+                ->leftJoin('lugares as destinos', 'traslados.destino', '=', 'destinos.id')
+                ->leftJoin('chofers', 'traslados.idChofer', '=', 'chofers.id') // Agregado
+                ->leftJoin('cliente', 'traslados.idCliente', '=', 'cliente.id') // Agregado
+                ->whereBetween('traslados.fecha_creacion', [$request->fecha_inicio, $request->fecha_fin])
+                ->orderBy('traslados.fecha_creacion', 'desc')
+                ->get();
+    
+            // Calcular las ganancias llamando al método calcularGanancias
+            $ganancias = $this->calcularGanancias($request);
+    
+            // Agregar las ganancias al array de respuesta
+            $responseArray = [
+                'ganancias' => $ganancias,
+                'traslados_realizados' => $traslados,
+            ];
+    
+            return response()->json($responseArray);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function calcularGanancias(Request $request)
     {
-        // Validar la solicitud
-        $request->validate([
-            'fechaInicio' => 'required|date',
-            'fechaFin' => 'required|date|after_or_equal:fechaInicio',
-        ]);
-    
         try {
+            // Validar datos de la solicitud
+            $request->validate([
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            ]);
+    
             // Obtener las ganancias sumando el 30% del costo de cada traslado
             $ganancias = DB::table('traslados')
-                ->whereBetween('created_at', [$request->fechaInicio, $request->fechaFin])
+                ->whereBetween('fecha_creacion', [$request->fecha_inicio, $request->fecha_fin])
                 ->sum(DB::raw('costo * 0.3'));
     
-            return response()->json(['ganancias' => $ganancias]);
+            // Convertir las ganancias a un entero o un valor de punto flotante
+            return floatval($ganancias); // Para obtener un valor de punto flotante
+            // return intval($ganancias); // Para obtener un valor entero
+    
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -101,8 +155,8 @@ class AdminController extends Controller
     {
         // Validación de datos
         $request->validate([
-            'fechaInicio' => 'required|date',
-            'fechaFin' => 'required|date|after_or_equal:fechaInicio',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
         ]);
     
         try {
@@ -110,7 +164,7 @@ class AdminController extends Controller
             $cancelaciones = DB::table('traslados')
                 ->where('idChofer', $idChofer)
                 ->where('estado', 'cancelado')
-                ->whereBetween('fecha_pago', [$request->fechaInicio, $request->fechaFin])
+                ->whereBetween('fecha_pago', [$request->fecha_inicio, $request->fecha_fin])
                 ->get();
     
             // Ejemplo: Devolver las cancelaciones (puedes adaptarlo según tus necesidades)

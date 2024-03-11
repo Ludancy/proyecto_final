@@ -21,8 +21,7 @@ class CreateSaldoClientesTable extends Migration
                 fecha_recarga DATE,
                 referencia VARCHAR(255),
                 monto DECIMAL(10, 2),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
                 FOREIGN KEY (idCliente) REFERENCES cliente(id) ON DELETE CASCADE,
                 FOREIGN KEY (idBanco) REFERENCES bancos(id) ON DELETE CASCADE
             )

@@ -18,9 +18,7 @@ class CreateLugaresTable extends Migration
                 nombre VARCHAR(255),
                 valor_numerico DECIMAL(10, 2),
                 latitud DOUBLE NULL,
-                longitud DOUBLE NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                longitud DOUBLE NULL
             )
         ');
     }

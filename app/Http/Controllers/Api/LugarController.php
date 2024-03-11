@@ -45,9 +45,7 @@ class LugarController extends Controller
 
             $lugarId = DB::table('lugares')->insertGetId([
                 'nombre' => $request->input('nombre'),
-                'valor_numerico' => $request->input('valor_numerico'),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'valor_numerico' => $request->input('valor_numerico')
             ]);
 
             $lugar = DB::table('lugares')->find($lugarId);
