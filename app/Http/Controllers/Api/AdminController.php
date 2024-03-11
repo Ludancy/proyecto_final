@@ -121,19 +121,25 @@ class AdminController extends Controller
 
     public function calcularGanancias(Request $request)
     {
-        // Validar la solicitud
-        $request->validate([
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-        ]);
-    
         try {
+            // Validar datos de la solicitud
+            $request->validate([
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            ]);
+    
             // Obtener las ganancias sumando el 30% del costo de cada traslado
             $ganancias = DB::table('traslados')
                 ->whereBetween('fecha_creacion', [$request->fecha_inicio, $request->fecha_fin])
                 ->sum(DB::raw('costo * 0.3'));
     
+            // Convertir las ganancias a un entero o un valor de punto flotante
+            $ganancias = floatval($ganancias); // Para obtener un valor de punto flotante
+            // $ganancias = intval($ganancias); // Para obtener un valor entero
+    
+            // Devolver el valor numérico de las ganancias
             return response()->json(['ganancias' => $ganancias]);
+    
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
