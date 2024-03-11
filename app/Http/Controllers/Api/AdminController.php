@@ -112,7 +112,16 @@ class AdminController extends Controller
                 ->orderBy('traslados.fecha_creacion', 'desc')
                 ->get();
     
-            return response()->json(['traslados_realizados' => $traslados]);
+            // Calcular las ganancias llamando al método calcularGanancias
+            $ganancias = $this->calcularGanancias($request);
+    
+            // Agregar las ganancias al array de respuesta
+            $responseArray = [
+                'ganancias' => $ganancias,
+                'traslados_realizados' => $traslados,
+            ];
+    
+            return response()->json($responseArray);
     
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -134,11 +143,8 @@ class AdminController extends Controller
                 ->sum(DB::raw('costo * 0.3'));
     
             // Convertir las ganancias a un entero o un valor de punto flotante
-            $ganancias = floatval($ganancias); // Para obtener un valor de punto flotante
-            // $ganancias = intval($ganancias); // Para obtener un valor entero
-    
-            // Devolver el valor numérico de las ganancias
-            return response()->json(['ganancias' => $ganancias]);
+            return floatval($ganancias); // Para obtener un valor de punto flotante
+            // return intval($ganancias); // Para obtener un valor entero
     
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
