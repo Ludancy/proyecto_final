@@ -29,10 +29,11 @@ use Illuminate\Http\Request;
 
 Route::post('register', [AuthController::class, 'register']);
 
-Route::group(['middleware' => ['auth:sanctum']], function(){
+Route::middleware(['checkAuthToken'])->group(function () {
+    // Tus rutas protegidas aquí
     Route::get('user-profile', [AuthController::class, 'userProfile']);
+    Route::post('renew-token', [AuthController::class, 'renewToken']);
     Route::post('logout', [AuthController::class, 'logout']);
-
 });
 
 

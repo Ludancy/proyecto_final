@@ -252,7 +252,7 @@ class ClienteController extends Controller
     {
         try {
             // Buscar el traslado del cliente por ID
-            $traslados = DB::table('traslados')
+            $traslado = DB::table('traslados')
             ->select(
                 'traslados.id as trasladoId',
                 'traslados.*', // Puedes mantener el resto de los campos de traslados
@@ -263,12 +263,10 @@ class ClienteController extends Controller
             )
             ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
             ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
+            ->where('traslados.id', $trasladoId)
             ->orderBy('traslados.fecha_creacion', 'DESC')
-            ->get();
+            ->first();
 
-            if (!$traslado) {
-                return response(["message" => "No se encontró el traslado con ID $trasladoId para este cliente"], 404);
-            }
 
             // Devolver los datos del traslado, chofer y vehículo asociado
             return response()->json($traslado, 200);
