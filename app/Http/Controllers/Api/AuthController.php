@@ -127,7 +127,9 @@ class AuthController extends Controller
             if ($user && Hash::check($credentials['password'], $user->password)) {
                 // Obtener datos adicionales según el tipo de usuario
                 $additionalData = $this->getUserAdditionalData($user);
-    
+                $nombreRol = DB::table('roles')
+                ->where('id', $user->idRol)
+                ->value('nombre');
                 // Generar token
                 $token = $this->generateToken($user);
     
@@ -136,6 +138,7 @@ class AuthController extends Controller
                     "email_user" => $user->correo,
                     "distid" => "RRA555", // Reemplaza con datos reales
                     "role" => $user->idRol,
+                    "role_nombre" => $nombreRol,
                     "token" => $token,
                     "additional_data" => $additionalData,
                 ];
@@ -189,13 +192,59 @@ class AuthController extends Controller
     }
     
     
+    public function renewToken(Request $request)
+    {
+        try {
+            // Obtén el usuario del token actual
+            $user = $request->attributes->get('auth_user');
     
-
-    public function userProfile(Request $request) {
-        return response()->json([
-            "message" => "userProfile OK",
-            "userData" => auth()->user()
-        ], Response::HTTP_OK);
+            // Genera un nuevo token
+            $newToken = $this->generateToken($user);
+    
+            // Obtén datos adicionales según el tipo de usuario
+            $additionalData = $this->getUserAdditionalData($user);
+    
+            // Verifica si $additionalData es nulo antes de acceder a sus propiedades
+            if ($additionalData) {
+                // Construye la respuesta con el nuevo token y la información del usuario
+                $response = [
+                    "email_user" => $user->correo,
+                    "rol" => $user->idRol,
+                    "distid" => "RRA555", // Reemplaza con datos reales
+                    "nombre" => $additionalData->nombre,
+                    "apellido" => $additionalData->apellido,
+                    "cedula" => $additionalData->cedula,
+                    "idUsuario" => $additionalData->id,
+                    "idAuth" => $additionalData->idAuth,
+                    "token" => $newToken,
+                ];
+            } else {
+                // Manejar el caso en que $additionalData sea nulo
+                return response(["error" => "Datos adicionales del usuario no encontrados"], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+    
+            return response($response, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(["error" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function userProfile(Request $request)
+    {
+        try {
+            $user = $request->attributes->get('auth_user');
+    
+            // Agrega instrucciones de depuración
+            \Log::info('User in userProfile:', ['user' => $user]);
+    
+            // Resto de tu lógica para el perfil del usuario
+            // ...
+    
+            return response(['message' => 'userProfile OK', 'userData' => $user], 200);
+        } catch (\Exception $e) {
+            // Manejo de excepciones
+            return response(['error' => $e->getMessage()], 500);
+        }
     }
     
     public function logout() {

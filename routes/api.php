@@ -29,10 +29,11 @@ use Illuminate\Http\Request;
 
 Route::post('register', [AuthController::class, 'register']);
 
-Route::group(['middleware' => ['auth:sanctum']], function(){
+Route::middleware(['checkAuthToken'])->group(function () {
+    // Tus rutas protegidas aquí
     Route::get('user-profile', [AuthController::class, 'userProfile']);
+    Route::post('renew-token', [AuthController::class, 'renewToken']);
     Route::post('logout', [AuthController::class, 'logout']);
-
 });
 
 
@@ -50,6 +51,12 @@ Route::get('/choferes', [ChoferController::class, 'getChoferes']);
 Route::put('/choferes/{id}', [ChoferController::class, 'update']); // Actualizar un chofer por ID
 Route::delete('/choferes/{id}', [ChoferController::class, 'destroy']); // Eliminar un chofer por ID
 Route::get('choferes/{id}/traslados', [ChoferController::class, 'getTraslados']);
+Route::get('/chofer/{id}/banco', [ChoferController::class, 'getBancoByChoferId']);
+Route::get('/contactos-emergencia/{idContactoEmergencia}', [ChoferController::class, 'getContactosEmergenciaById']);
+Route::get('/choferes/{id}/contactos-emergencia', [ChoferController::class, 'getContactosEmergenciaByChoferId']);
+Route::put('/contactos-emergencia/{idContactoEmergencia}', [ChoferController::class, 'actualizarContactoEmergencia']);
+Route::delete('/contactos-emergencia/{idContactoEmergencia}', [ChoferController::class, 'eliminarContactoEmergencia']);
+Route::post('/choferes/contactos-emergencia', [ChoferController::class, 'crearContactoEmergencia']);
 
     Route::post('prueba-chofer', [ChoferController::class, 'storeCalificacion']);
     // Referencia textual: "...ingresan la puntuación a las pruebas tanto de los choferes..."
@@ -86,18 +93,20 @@ Route::prefix('clientes')->group(function () {
     Route::put('/{id}', [ClienteController::class, 'update']); // Actualizar un cliente por ID
     Route::delete('/{id}', [ClienteController::class, 'destroy']); // Eliminar un cliente por ID
 });
-
+Route::get('/traslados', [ClienteController::class, 'obtenerTodosLosTraslados']);
+Route::delete('/traslados/{trasladoId}', [ClienteController::class, 'eliminarTraslado']);
 Route::get('/traslado/cliente/{clienteId}', [ClienteController::class, 'obtenerDatosTrasladoCliente']);
 
 Route::post('/{idCliente}/traslados/solicitar', [ClienteController::class, 'solicitarTraslado']);
 Route::get('cliente/traslados/{clienteId}', [ClienteController::class, 'trasladosCliente']);
+Route::get('/traslados/{trasladoId}', [ClienteController::class, 'obtenerTrasladoPorId']);
 Route::get('/historial-recargas', [ClienteController::class, 'historialRecargasCliente']);
 Route::get('/historial-recargas/{clienteId}', [ClienteController::class, 'historialRecargasCliente']);
 
 
 // Administrativo
 Route::post('/calcular-ganancias', [AdminController::class, 'calcularGanancias']);
-
+Route::post('revisar-traslados-realizados', [AdminController::class, 'trasladosPorFecha']);
 Route::post('choferes/{id}/traslados/cancelar', [AdminController::class, 'cancelarTraslados']);
 Route::post('/ver-cancelaciones-chofer/{idChofer}', [AdminController::class, 'verCancelacionesPorChofer']);
 Route::post('/cancelar-traslado/{idTraslado}', [AdminController::class, 'cancelarTraslado']);
