@@ -232,12 +232,22 @@ class ClienteController extends Controller
     public function trasladosCliente($clienteId)
     {
         try {
-            // Obtener los traslados realizados por el cliente
+            // Obtener los traslados realizados por el cliente con los nombres de los lugares de origen y destino,
+            // así como el nombre del cliente y el nombre del chofer
             $traslados = DB::select('
-                SELECT * 
+                SELECT 
+                    traslados.*, 
+                    origenes.nombre as nombre_origen,
+                    destinos.nombre as nombre_destino,
+                    cliente.nombre as nombre_cliente,
+                    chofers.nombre as nombre_chofer
                 FROM traslados 
-                WHERE idCliente = :cliente_id 
-                ORDER BY fecha_creacion DESC
+                JOIN lugares as origenes ON traslados.origen = origenes.id
+                JOIN lugares as destinos ON traslados.destino = destinos.id
+                JOIN cliente ON traslados.idCliente = cliente.id
+                JOIN chofers ON traslados.idChofer = chofers.id
+                WHERE traslados.idCliente = :cliente_id 
+                ORDER BY traslados.fecha_creacion DESC
             ', ['cliente_id' => $clienteId]);
     
             // Puedes personalizar la respuesta según tus necesidades
@@ -253,29 +263,33 @@ class ClienteController extends Controller
         try {
             // Buscar el traslado del cliente por ID
             $traslado = DB::table('traslados')
-            ->select(
-                'traslados.id as trasladoId',
-                'traslados.*', // Puedes mantener el resto de los campos de traslados
-                'chofers.id as choferId',
-                'chofers.*', // Puedes mantener el resto de los campos de chofer
-                'vehiculos.id as vehiculoId',
-                'vehiculos.*' // Puedes mantener el resto de los campos de vehiculo
-            )
-            ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
-            ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
-            ->where('traslados.id', $trasladoId)
-            ->orderBy('traslados.fecha_creacion', 'DESC')
-            ->first();
-
-
+                ->select(
+                    'traslados.id as trasladoId',
+                    'traslados.*',
+                    'chofers.id as choferId',
+                    'chofers.*',
+                    'vehiculos.id as vehiculoId',
+                    'vehiculos.*',
+                    'origen_lugar.nombre as origenNombre',
+                    'destino_lugar.nombre as destinoNombre'
+                )
+                ->join('chofers', 'traslados.idChofer', '=', 'chofers.id')
+                ->join('vehiculos', 'traslados.idVehiculo', '=', 'vehiculos.id')
+                ->join('lugares as origen_lugar', 'traslados.origen', '=', 'origen_lugar.id')
+                ->join('lugares as destino_lugar', 'traslados.destino', '=', 'destino_lugar.id')
+                ->where('traslados.id', $trasladoId)
+                ->orderBy('traslados.fecha_creacion', 'DESC')
+                ->first();
+    
             // Devolver los datos del traslado, chofer y vehículo asociado
             return response()->json($traslado, 200);
-
+    
         } catch (\Exception $e) {
             // Manejo de excepciones
             return response(["error" => $e->getMessage()], 500);
         }
     }
+    
 
     public function obtenerTodosLosTraslados()
     {
