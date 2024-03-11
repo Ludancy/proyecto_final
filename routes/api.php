@@ -106,7 +106,7 @@ Route::get('/historial-recargas/{clienteId}', [ClienteController::class, 'histor
 
 // Administrativo
 Route::post('/calcular-ganancias', [AdminController::class, 'calcularGanancias']);
-
+Route::post('revisar-traslados-realizados', [AdminController::class, 'trasladosPorFecha']);
 Route::post('choferes/{id}/traslados/cancelar', [AdminController::class, 'cancelarTraslados']);
 Route::post('/ver-cancelaciones-chofer/{idChofer}', [AdminController::class, 'verCancelacionesPorChofer']);
 Route::post('/cancelar-traslado/{idTraslado}', [AdminController::class, 'cancelarTraslado']);
