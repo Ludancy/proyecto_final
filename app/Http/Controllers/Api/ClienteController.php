@@ -121,7 +121,7 @@ class ClienteController extends Controller
     
             // Buscar vehículo activo del chofer
             $vehiculoChofer = DB::table('vehiculos')
-                ->where('idChofer', $choferAleatorio->id)
+                ->where('idChofer', $choferAleatorio->idChofer)
                 ->where('estado_actual', 'activo')
                 ->first();
     
@@ -133,10 +133,10 @@ class ClienteController extends Controller
             $traslado = DB::table('traslados')->insertGetId([
                 'origen' => $request->idOrigen,
                 'destino' => $request->idDestino,
-                'costo' => $request->costo,
+                'costo' => $costoTraslado,
                 'idCliente' => $idCliente,
                 'estado' => 'Pendiente',
-                'idChofer' => $choferAleatorio->id,
+                'idChofer' => $choferAleatorio->idChofer,
                 'idVehiculo' => $vehiculoChofer->id,
                 'fecha_creacion' => now(),
             ]);
